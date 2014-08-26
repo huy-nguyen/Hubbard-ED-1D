@@ -63,20 +63,24 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
             clearvars left_temp;
             
             spinUpGreenFunction(i,j) = left_wave_function * middle_matrix * right_wave_function;
-            
+            clearvars left_wave_function right_wave_function;
         end
         
         clearvars destructionMatrix;
     end
     
-    clearvars secondHamiltonian expmSecondHamiltonian;
+    clearvars middle_matrix eigenVectors eigenValues;
     
     % spin dn:
     sizeSpacePlusOne=nchoosek(noOfSites,noOfUp)*nchoosek(noOfSites,noOfDn+1);    
     
     % the Hamiltonian in expanded space:
-    secondHamiltonian=hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn+1 );
-    expmSecondHamiltonian=expm( -tau*eye(sizeSpacePlusOne)*secondHamiltonian );
+    secondHamiltonian=full(hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn+1 ));
+    [eigenVectors,eigenValues]=eig(secondHamiltonian);
+    clearvars secondHamiltonian;
+
+    eigenValues=diag(eigenValues);
+    middle_matrix = diag(exp((groundStateEnergy - eigenValues)*tau));
     
     for i=1:noOfSites
         
@@ -98,12 +102,13 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
             clearvars left_temp;
             
             spinDnGreenFunction(i,j) = left_wave_function * middle_matrix * right_wave_function;
+            clearvars left_wave_function right_wave_function;
         end
         
         clearvars destructionMatrix;
     end    
     
-    clearvars secondHamiltonian expmSecondHamiltonian;
+    clearvars middle_matrix eigenVectors eigenValues;
 
 else
     error('Error: cannot apply creation operator when number of electrons = number of sites');
