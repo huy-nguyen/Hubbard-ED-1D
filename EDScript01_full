@@ -1,0 +1,8 @@
+#!/bin/tcsh
+#PBS -N ED_01_full
+#PBS -l nodes=1:c11:ppn=8
+#PBS -l walltime=12:00:00
+#PBS -j oe
+cd ~/thesis-ED
+
+matlab -nodisplay -nosplash -nojvm <ED_01_full.m> ED_01_full.out
