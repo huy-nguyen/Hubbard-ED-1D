@@ -20,6 +20,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
 %     eigenValues=diag(eigenValues);
     
     groundState=eigenVectors(:,1);
+    groundStateEnergy = eigenValues(1);
     spinUpGreenFunction=zeros(noOfSites);
     spinDnGreenFunction=zeros(noOfSites);
     
@@ -36,8 +37,8 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     sizeOriginalSpace=nchoosek(noOfSites,noOfUp)*nchoosek(noOfSites,noOfDn);
     
     % the Hamiltonian in the original space
-    firstHamiltonian=hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn );
-    expmFirstHamiltonian= expm( tau*eye(sizeOriginalSpace)*firstHamiltonian );
+%     firstHamiltonian=hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn );
+%     expmFirstHamiltonian= expm( tau*eye(sizeOriginalSpace)*firstHamiltonian );
     
     % spin up:
     sizeSpacePlusOne=nchoosek(noOfSites,noOfUp+1)*nchoosek(noOfSites,noOfDn);    
@@ -59,9 +60,15 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
             
             
             % put them all together
-            spinUpGreenFunction(i,j)=(groundState')*expmFirstHamiltonian*destructionMatrix*expmSecondHamiltonian*creationMatrix*groundState;
+            %spinUpGreenFunction(i,j)=(groundState')*expmFirstHamiltonian*destructionMatrix*expmSecondHamiltonian*creationMatrix*groundState;
             
-            clearvars creationMatrix
+            right_wave_function = creationMatrix*groundState;
+            clearvars creationMatrix;
+            
+            left_wave_function =  (groundState') * destructionMatrix;
+            
+            temp = left_wave_function * expmSecondHamiltonian * right_wave_function;
+            spinUpGreenFunction(i,j) = exp(tau*groundStateEnergy) * temp;
         end
         
         clearvars destructionMatrix;
@@ -87,9 +94,15 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
             creationMatrix=creationOperator( noOfSites, noOfUp, noOfDn , j, 'dn' );            
           
             % put them all together
-            spinDnGreenFunction(i,j)=(groundState')*expmFirstHamiltonian*destructionMatrix*expmSecondHamiltonian*creationMatrix*groundState;
+            %spinDnGreenFunction(i,j)=(groundState')*expmFirstHamiltonian*destructionMatrix*expmSecondHamiltonian*creationMatrix*groundState;
             
-            clearvars creationMatrix
+            right_wave_function = creationMatrix*groundState;
+            clearvars creationMatrix;
+            
+            left_wave_function =  (groundState') * destructionMatrix;
+            
+            temp = left_wave_function * expmSecondHamiltonian * right_wave_function;
+            spinUpGreenFunction(i,j) = exp(tau*groundStateEnergy) * temp;
         end
         
         clearvars destructionMatrix;
