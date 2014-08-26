@@ -88,7 +88,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
             left_wave_function =  (groundState') * destructionMatrix;
             
             temp = left_wave_function * expmSecondHamiltonian * right_wave_function;
-            spinUpGreenFunction(i,j) = exp(tau*groundStateEnergy) * temp;
+            spinDnGreenFunction(i,j) = exp(tau*groundStateEnergy) * temp;
         end
         
         clearvars destructionMatrix;
