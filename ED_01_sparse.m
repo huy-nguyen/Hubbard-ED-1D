@@ -9,7 +9,7 @@ N_dn=5; % The number of spin-down electrons
 U=4.0; % The on-site repulsion strength in the Hubbard Hamiltonian
 t=1; % The hopping amplitude between nearest-neighbor sites in the x direction
 
-tau = 2.5;
+tau = 0.0;
 
 maxNumCompThreads(8)
 

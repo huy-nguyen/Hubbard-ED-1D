@@ -5,4 +5,4 @@
 #PBS -j oe
 cd ~/thesis-ED
 
-matlab -nodisplay -nosplash <ED_01_sparse.m> ED_01_sparse.out
+matlab -nodisplay -nosplash -nojvm <ED_01_sparse.m> ED_01_sparse.out
