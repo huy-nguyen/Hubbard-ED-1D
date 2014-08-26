@@ -9,8 +9,6 @@ TOTAL_UP_STATES=nchoosek(noOfSites,noOfUp);
 TOTAL_DN_STATES=nchoosek(noOfSites,noOfDn);
 TOTAL_ALL_STATES=TOTAL_UP_STATES*TOTAL_DN_STATES;
 
-% sprintf('Total num of states = %d',TOTAL_ALL_STATES)
-
 tic;
 
 if (noOfUp < noOfSites) && (noOfDn < noOfSites)
@@ -24,22 +22,14 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     spinUpGreenFunction=zeros(noOfSites);
     spinDnGreenFunction=zeros(noOfSites);
     
-%     disp('Done with diagonalization')
     
     save(savedFileName,'eigenVectors','eigenValues','totalHamiltonian'); %save variables...    
     disp('Saved eigenVectors, eigenValues, totalHamiltonian'); % for debugging
 
     clearvars totalHamiltonian eigenVectors eigenValues; %...before clearing them to save memory
     
-    
-            
-    
     sizeOriginalSpace=nchoosek(noOfSites,noOfUp)*nchoosek(noOfSites,noOfDn);
-    
-    % the Hamiltonian in the original space
-%     firstHamiltonian=hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn );
-%     expmFirstHamiltonian= expm( tau*eye(sizeOriginalSpace)*firstHamiltonian );
-    
+       
     % spin up:
     sizeSpacePlusOne=nchoosek(noOfSites,noOfUp+1)*nchoosek(noOfSites,noOfDn);    
     
@@ -59,9 +49,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
             creationMatrix=creationOperator( noOfSites, noOfUp, noOfDn , j, 'up' );
             
             
-            % put them all together
-            %spinUpGreenFunction(i,j)=(groundState')*expmFirstHamiltonian*destructionMatrix*expmSecondHamiltonian*creationMatrix*groundState;
-            
+            % put them all together            
             right_wave_function = creationMatrix*groundState;
             clearvars creationMatrix;
             
@@ -93,9 +81,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
             % creation operator
             creationMatrix=creationOperator( noOfSites, noOfUp, noOfDn , j, 'dn' );            
           
-            % put them all together
-            %spinDnGreenFunction(i,j)=(groundState')*expmFirstHamiltonian*destructionMatrix*expmSecondHamiltonian*creationMatrix*groundState;
-            
+            % put them all together            
             right_wave_function = creationMatrix*groundState;
             clearvars creationMatrix;
             
