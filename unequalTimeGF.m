@@ -2,7 +2,8 @@ function [ spinUpGreenFunction, spinDnGreenFunction ] = unequalTimeGF( t, U, tau
 % calculate the equal time GF by constructing separate matrices for the c_i and c_j^\dagger operators
 
 format compact;
-savedFileName=strcat('ED_',int2str(noOfSites),'_sites_',int2str(noOfUp),'u',int2str(noOfDn),'d_U_',num2str(U, '%4.2f'),'_tau_',num2str(tau, '%4.2f'),'_t_',num2str(t),' ',datestr(now,'_yymmdd_HHMMSS'),'.mat')
+savedFileName=strcat('ED_',int2str(noOfSites),'_sites_',int2str(noOfUp),'u',int2str(noOfDn),'d_U_',num2str(U, '%4.2f'),'_tau_',num2str(tau, '%4.2f'),'_t_',num2str(t),' ',datestr(now,'_yymmdd_HHMMSS'),'.mat');
+sprintf('Saved data file: %s', savedFileName)
 
 
 TOTAL_UP_STATES=nchoosek(noOfSites,noOfUp);
