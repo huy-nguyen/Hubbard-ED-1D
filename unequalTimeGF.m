@@ -1,7 +1,8 @@
 function [ spinUpGreenFunction, spinDnGreenFunction ] = unequalTimeGF( t, U, tau, noOfSites, noOfUp, noOfDn )
 % calculate the equal time GF by constructing separate matrices for the c_i and c_j^\dagger operators
 
-savedFileName=strcat('ED_',int2str(noOfSites),'_sites_',int2str(noOfUp),'u',int2str(noOfDn),'d_U_',num2str(U, '%4.2f'),'_tau_',num2str(tau, '%4.2f'),'_t_',num2str(t),' ',datestr(now,'_yymmdd_HHMMSS'),'.mat');
+format compact;
+savedFileName=strcat('ED_',int2str(noOfSites),'_sites_',int2str(noOfUp),'u',int2str(noOfDn),'d_U_',num2str(U, '%4.2f'),'_tau_',num2str(tau, '%4.2f'),'_t_',num2str(t),' ',datestr(now,'_yymmdd_HHMMSS'),'.mat')
 
 
 TOTAL_UP_STATES=nchoosek(noOfSites,noOfUp);
@@ -25,6 +26,8 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
 %     disp('Done with diagonalization')
     
     save(savedFileName,'eigenVectors','eigenValues','totalHamiltonian'); %save variables...    
+    disp('Saved eigenVectors, eigenValues, totalHamiltonian'); % for debugging
+
     clearvars totalHamiltonian eigenVectors eigenValues; %...before clearing them to save memory
     
     
@@ -100,7 +103,11 @@ end
 
 time=toc
 save(savedFileName,'-append','noOfSites','noOfUp','noOfDn','U','tau','t','time');
+disp('saved noOfSites, noOfUp, noOfDn, U, tau, t, time');
+
 save(savedFileName, '-append','spinUpGreenFunction', 'spinDnGreenFunction');
+disp('saved spinUpGreenFunction, spinDnGreenFunction');
+
 
 
 end
