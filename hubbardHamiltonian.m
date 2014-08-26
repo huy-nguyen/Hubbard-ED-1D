@@ -64,9 +64,6 @@ for m=1:totalNoOfPossiblestates % go through each state in the basis:
                    kineticHamiltonian(basisIndexOfLeftShiftedResult,m)= kineticHamiltonian(basisIndexOfLeftShiftedResult,m) + t;
                end
            end
-           % for debugging:
-%            disp( strcat(strrep(['(' sprintf(' %d,', upSector) ')'], ',)', ')'),' site  ',num2str(n),' left-shift to' ));
-%            disp(strrep(['(' sprintf(' %d,', leftShiftResult) ')'], ',)', ')'));
        end
        
        % right shift:
@@ -92,9 +89,6 @@ for m=1:totalNoOfPossiblestates % go through each state in the basis:
                    kineticHamiltonian(basisIndexOfRightShiftedResult,m)= kineticHamiltonian(basisIndexOfRightShiftedResult,m) + t;
                end
            end
-           % for debugging:
-%            disp( strcat(strrep(['(' sprintf(' %d,', upSector) ')'], ',)', ')'),' site  ',num2str(n),' right-shift to' ));
-%            disp(strrep(['(' sprintf(' %d,', rightShiftResult) ')'], ',)', ')'));
        end
     end    
     % shift for spin down:
@@ -122,9 +116,6 @@ for m=1:totalNoOfPossiblestates % go through each state in the basis:
                    kineticHamiltonian(basisIndexOfLeftShiftedResult,m)= kineticHamiltonian(basisIndexOfLeftShiftedResult,m) + t;
                end
            end             
-           % for debugging:
-%            disp( strcat(strrep(['(' sprintf(' %d,', dnSector) ')'], ',)', ')'),' site  ',num2str(p),' left-shift to' ));
-%            disp(strrep(['(' sprintf(' %d,', leftShiftResult) ')'], ',)', ')'));
        end
        % right shift:
        rightShiftResult=dnSector;
@@ -150,9 +141,6 @@ for m=1:totalNoOfPossiblestates % go through each state in the basis:
                end
            end
            
-           % for debugging:
-%            disp( strcat(strrep(['(' sprintf(' %d,', dnSector) ')'], ',)', ')'),' site  ',num2str(p),' right-shift to' ));
-%            disp(strrep(['(' sprintf(' %d,', rightShiftResult) ')'], ',)', ')'));
        end
     end
     
