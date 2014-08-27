@@ -45,10 +45,36 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         clearvars destructionMatrix left_wave_function;
     end
     
-    % Then need to convert the upper triangular matrix into a full matrix (assuming periodic boundary condition)
     
     clearvars sizeSpacePlusOne eigenVectors eigenValues;
-%% SPIN DOWN: 
+%% SPIN DOWN:    
+    sizeSpacePlusOne=nchoosek(noOfSites,noOfUp)*nchoosek(noOfSites,noOfDn + 1);  % might not be needed. 
+    [eigenVectors, eigenValues] = eigs( hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn + 1 ), ...
+                                            NUM_OF_EIGEN_VALUES, 'sa', OPTS);
+    eigenValues = diag(eigenValues);
+    for i_site=1:noOfSites        
+        destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'dn' )'; 
+        left_wave_function =  (groundState') * destructionMatrix; 
+        for j_site=1:noOfSites % maybe consider j_site=i_site:noOfSites ?
+            right_wave_function = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'dn' ) * ...
+                                                groundState;
+            k_sum = 0;
+            for k_eigenValues = 1:NUM_OF_EIGEN_VALUES %sum over k
+                expo_factor = exp( tau*( groundStateEnergy - eigenValues(k_eigenValues)));                
+                i_total = left_wave_function * eigenVectors(:,k_eigenValues);
+                j_total = dot( right_wave_function, conj(eigenVectors(:,k_eigenValues)) );
+                k_sum = k_sum + expo_factor * i_total * j_total;
+                
+                clearvars expo_factor i_total j_total;
+            end
+            spinDnGreenFunction(i_site,j_site) = k_sum;
+            clearvars creationMatrix right_wave_function;
+        end
+        clearvars destructionMatrix left_wave_function;
+    end
+    
+    
+    clearvars sizeSpacePlusOne eigenVectors eigenValues;
 
 else
     error('Error: cannot apply creation operator when number of electrons = number of sites');
