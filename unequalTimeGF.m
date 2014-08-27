@@ -36,7 +36,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     
     % the Hamiltonian in expanded space:
     secondHamiltonian=hubbardHamiltonian( t, U, noOfSites, noOfUp+1, noOfDn );
-    expmSecondHamiltonian=expm( -tau*eye(sizeSpacePlusOne)*secondHamiltonian );
+    expmSecondHamiltonian=expm( -tau*speye(sizeSpacePlusOne)*secondHamiltonian );
     
     for i=1:noOfSites
         
@@ -69,7 +69,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     
     % the Hamiltonian in expanded space:
     secondHamiltonian=hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn+1 );
-    expmSecondHamiltonian=expm( -tau*eye(sizeSpacePlusOne)*secondHamiltonian );
+    expmSecondHamiltonian=expm( -tau*speye(sizeSpacePlusOne)*secondHamiltonian );
     
     for i=1:noOfSites
         
