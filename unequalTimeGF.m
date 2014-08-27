@@ -29,7 +29,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     save(savedFileName,'groundState','groundStateEnergy'); %save variables...    
     disp('Saved groundState groundStateEnergy'); % for debugging
        
-    % spin up:
+%% SPIN UP:
     sizeSpacePlusOne=nchoosek(noOfSites,noOfUp+1)*nchoosek(noOfSites,noOfDn);    
     
     % the Hamiltonian in expanded space:
@@ -44,21 +44,24 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     
     for i=1:noOfSites        
         % destruction operator:
-        destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i, 'up' );
-        destructionMatrix=destructionMatrix'; % need to take Hermitian conjugate to turn creation into destruction operator
+        destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i, 'up' )'; % need to take Hermitian conjugate to turn creation into destruction operator
             
         for j=1:noOfSites
-            % creation operator
-            creationMatrix=creationOperator( noOfSites, noOfUp, noOfDn , j, 'up' );
+            % replace the following lines:
+%             creationMatrix=creationOperator( noOfSites, noOfUp, noOfDn , j, 'up' );            
+%             right_wave_function = creationMatrix*groundState;
+%             clearvars creationMatrix;
+            % with this line:
+            right_wave_function = creationOperator( noOfSites, noOfUp, noOfDn , j, 'up' ) * ...
+                                                groundState;
+            left_wave_function =  (groundState') * destructionMatrix; 
+            % replace the following lines:
+%             temp = left_wave_function * expmSecondHamiltonian * right_wave_function;
+%             spinUpGreenFunction(i,j) = exp(tau*groundStateEnergy) * temp;
+            % with this line:
+            spinUpGreenFunction(i,j) = (left_wave_function * expmSecondHamiltonian * right_wave_function) * exp(tau*groundStateEnergy);
             
-            % put them all together            
-            right_wave_function = creationMatrix*groundState;
-            clearvars creationMatrix;
-            
-            left_wave_function =  (groundState') * destructionMatrix;
-            
-            temp = left_wave_function * expmSecondHamiltonian * right_wave_function;
-            spinUpGreenFunction(i,j) = exp(tau*groundStateEnergy) * temp;
+            clearvars left_wave_function right_wave_function;
         end
         
         clearvars destructionMatrix;
@@ -66,30 +69,38 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     
     clearvars secondHamiltonian expmSecondHamiltonian;
     
-    % spin dn:
+%% SPIN DOWN:
     sizeSpacePlusOne=nchoosek(noOfSites,noOfUp)*nchoosek(noOfSites,noOfDn+1);    
     
     % the Hamiltonian in expanded space:
-    secondHamiltonian=hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn+1 );
-    expmSecondHamiltonian=expm( -tau*speye(sizeSpacePlusOne)*secondHamiltonian );
+    % replace the following lines:
+%     secondHamiltonian=hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn+1 );
+%     expmSecondHamiltonian=expm( -tau*speye(sizeSpacePlusOne)*secondHamiltonian );
+    % with this line:
+    expmSecondHamiltonian = expm( -tau * speye(sizeSpacePlusOne) * ...
+                                   hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn+1 ));
     
     for i=1:noOfSites        
         % destruction operator:
-        destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i, 'dn' );
-        destructionMatrix=destructionMatrix'; % need to take Hermitian conjugate to turn creation into destruction operator
+        destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i, 'dn' )'; % need to take Hermitian conjugate to turn creation into destruction operator
             
         for j=1:noOfSites
-            % creation operator
-            creationMatrix=creationOperator( noOfSites, noOfUp, noOfDn , j, 'dn' );            
-          
-            % put them all together            
-            right_wave_function = creationMatrix*groundState;
-            clearvars creationMatrix;
+            % replace the following lines:
+%             creationMatrix=creationOperator( noOfSites, noOfUp, noOfDn , j, 'dn' );     
+%             right_wave_function = creationMatrix*groundState;
+%             clearvars creationMatrix;
+            % with this line:
+            right_wave_function = creationOperator( noOfSites, noOfUp, noOfDn , j, 'dn' ) * ...
+                                        groundState;
             
             left_wave_function =  (groundState') * destructionMatrix;
+            % replace the following lines:
+%             temp = left_wave_function * expmSecondHamiltonian * right_wave_function;
+%             spinDnGreenFunction(i,j) = exp(tau*groundStateEnergy) * temp;
+            % with this line:
+            spinDnGreenFunction(i,j) = (left_wave_function * expmSecondHamiltonian * right_wave_function) * exp(tau*groundStateEnergy); 
             
-            temp = left_wave_function * expmSecondHamiltonian * right_wave_function;
-            spinDnGreenFunction(i,j) = exp(tau*groundStateEnergy) * temp;
+            clearvars left_wave_function right_wave_function;
         end
         
         clearvars destructionMatrix;
