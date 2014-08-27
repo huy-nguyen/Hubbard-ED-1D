@@ -7,33 +7,42 @@ savedFileName=strcat('ED_',int2str(noOfSites),'_sites_',int2str(noOfUp),'u',int2
 tic;
 
 if (noOfUp < noOfSites) && (noOfDn < noOfSites)
-
-    [totalHamiltonian] = hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn );
-    [eigenVectors,eigenValues]=eigs(totalHamiltonian,1,'sa'); %ASSUMING THAT THE HAMILTONIAN IS REAL SYMMETRIC
-    
-    groundState=eigenVectors(:,1);
-    groundStateEnergy = eigenValues(1);
     spinUpGreenFunction=zeros(noOfSites);
     spinDnGreenFunction=zeros(noOfSites);
-    
-    
-    save(savedFileName,'eigenVectors','eigenValues','totalHamiltonian'); %save variables...    
-    disp('Saved eigenVectors, eigenValues, totalHamiltonian'); % for debugging
 
-    clearvars totalHamiltonian eigenVectors eigenValues; %...before clearing them to save memory
+    % Replace the following lines:
+%     [totalHamiltonian] = hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn );
+%     [eigenVectors,eigenValues]=eigs(totalHamiltonian,1,'sa'); %ASSUMING THAT THE HAMILTONIAN IS REAL SYMMETRIC
+%     groundState=eigenVectors(:,1);
+%     groundStateEnergy = eigenValues(1);
     
-    sizeOriginalSpace=nchoosek(noOfSites,noOfUp)*nchoosek(noOfSites,noOfDn);
+    % with this line to save memory:
+    [groundState,groundStateEnergy]=eigs( hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn ),...
+                                               1,'sa'); %ASSUMING THAT THE HAMILTONIAN IS REAL SYMMETRIC
+    
+    % Replace the following lines:
+%     save(savedFileName,'eigenVectors','eigenValues','totalHamiltonian'); %save variables...    
+%     disp('Saved eigenVectors, eigenValues, totalHamiltonian'); % for debugging
+%     clearvars totalHamiltonian eigenVectors eigenValues; %...before clearing them to save memory
+    
+    % with these lines:
+    save(savedFileName,'groundState','groundStateEnergy'); %save variables...    
+    disp('Saved groundState groundStateEnergy'); % for debugging
        
     % spin up:
     sizeSpacePlusOne=nchoosek(noOfSites,noOfUp+1)*nchoosek(noOfSites,noOfDn);    
     
-    
     % the Hamiltonian in expanded space:
-    secondHamiltonian=hubbardHamiltonian( t, U, noOfSites, noOfUp+1, noOfDn );
-    expmSecondHamiltonian=expm( -tau*speye(sizeSpacePlusOne)*secondHamiltonian );
+    % Replace the following lines:
+%     secondHamiltonian=hubbardHamiltonian( t, U, noOfSites, noOfUp+1, noOfDn );
+%     expmSecondHamiltonian=expm( -tau*speye(sizeSpacePlusOne)*secondHamiltonian );
     
-    for i=1:noOfSites
-        
+    % with this line:
+    expmSecondHamiltonian = expm( -tau * speye(sizeSpacePlusOne) * ...
+                                   hubbardHamiltonian( t, U, noOfSites, noOfUp+1, noOfDn ) );
+                                   
+    
+    for i=1:noOfSites        
         % destruction operator:
         destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i, 'up' );
         destructionMatrix=destructionMatrix'; % need to take Hermitian conjugate to turn creation into destruction operator
@@ -41,7 +50,6 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         for j=1:noOfSites
             % creation operator
             creationMatrix=creationOperator( noOfSites, noOfUp, noOfDn , j, 'up' );
-            
             
             % put them all together            
             right_wave_function = creationMatrix*groundState;
@@ -65,8 +73,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     secondHamiltonian=hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn+1 );
     expmSecondHamiltonian=expm( -tau*speye(sizeSpacePlusOne)*secondHamiltonian );
     
-    for i=1:noOfSites
-        
+    for i=1:noOfSites        
         % destruction operator:
         destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i, 'dn' );
         destructionMatrix=destructionMatrix'; % need to take Hermitian conjugate to turn creation into destruction operator
