@@ -10,7 +10,6 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
 
     [totalHamiltonian] = hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn );
     [eigenVectors,eigenValues]=eigs(totalHamiltonian,1,'sa'); %ASSUMING THAT THE HAMILTONIAN IS REAL SYMMETRIC
-%     eigenValues=diag(eigenValues);
     
     groundState=eigenVectors(:,1);
     groundStateEnergy = eigenValues(1);
