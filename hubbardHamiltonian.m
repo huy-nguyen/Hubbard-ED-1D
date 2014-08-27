@@ -3,10 +3,6 @@ function [ totalHamiltonian, kineticHamiltonian,  potentialHamiltonian] = hubbar
 
 [ combinedBasis, totalNoOfPossiblestates,totalNoOfUpStates, totalNoOfDnStates, upStates, dnStates ] = generateBasis( noOfSites, noOfUp, noOfDn );
 
-% potentialHamiltonian=zeros(totalNoOfPossiblestates);
-% kineticHamiltonian=zeros(totalNoOfPossiblestates);
-% totalHamiltonian=zeros(totalNoOfPossiblestates);
-
 noOfPar=noOfUp+noOfDn;
 
 
