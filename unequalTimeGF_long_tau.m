@@ -158,7 +158,7 @@ else
 end
 
 time=toc
-save(savedFileName,'-append','noOfSites','noOfUp','noOfDn','U','tau','t','time');
+save(savedFileName,'-append','noOfSites','noOfUp','noOfDn','U','tau','t','time', 'NUM_OF_EIGEN_VALUES_UP', 'NUM_OF_EIGEN_VALUES_DN');
 save(savedFileName, '-append','spinUpGreenFunction', 'spinDnGreenFunction');
 disp('Saved spinUpGreenFunction, spinDnGreenFunction.');
 fprintf('Finish all calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
