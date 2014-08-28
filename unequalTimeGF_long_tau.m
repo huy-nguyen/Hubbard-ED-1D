@@ -37,9 +37,10 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         NUM_OF_EIGEN_VALUES_UP = NUM_OF_EIGEN_VALUES;
     end
     
-    [eigenVectors, eigenValues] = eigs( hubbardHamiltonian( t, U, noOfSites, noOfUp+1, noOfDn ), ...
+    [eigenVectors_up, eigenValues_up] = eigs( hubbardHamiltonian( t, U, noOfSites, noOfUp+1, noOfDn ), ...
                                             NUM_OF_EIGEN_VALUES_UP, 'sa', OPTS);
-    eigenValues = diag(eigenValues);
+    eigenValues_up = diag(eigenValues_up);
+    save(savedFileName,'-append','eigenValues_up','eigenVectors_up');
     disp('Off-diagonal elements: ');
     for i_site=1:noOfSites        
         fprintf('Working on i = %d\n', i_site)
@@ -51,9 +52,9 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
                                                 groundState;
             k_sum = 0;
             for k_eigenValues = 1:NUM_OF_EIGEN_VALUES_UP %sum over k
-                expo_factor = exp( tau*( groundStateEnergy - eigenValues(k_eigenValues)));                
-                i_total = left_wave_function * eigenVectors(:,k_eigenValues);
-                j_total = dot( right_wave_function, conj(eigenVectors(:,k_eigenValues)) );
+                expo_factor = exp( tau*( groundStateEnergy - eigenValues_up(k_eigenValues)));                
+                i_total = left_wave_function * eigenVectors_up(:,k_eigenValues);
+                j_total = dot( right_wave_function, conj(eigenVectors_up(:,k_eigenValues)) );
                 k_sum = k_sum + expo_factor * i_total * j_total;
                 
                 clearvars expo_factor i_total j_total;
@@ -73,9 +74,9 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
                 groundState;
             k_sum = 0;
             for k_eigenValues = 1:NUM_OF_EIGEN_VALUES_UP %sum over k
-                expo_factor = exp( tau*( groundStateEnergy - eigenValues(k_eigenValues)));
-                i_total = left_wave_function * eigenVectors(:,k_eigenValues);
-                j_total = dot( right_wave_function, conj(eigenVectors(:,k_eigenValues)) );
+                expo_factor = exp( tau*( groundStateEnergy - eigenValues_up(k_eigenValues)));
+                i_total = left_wave_function * eigenVectors_up(:,k_eigenValues);
+                j_total = dot( right_wave_function, conj(eigenVectors_up(:,k_eigenValues)) );
                 k_sum = k_sum + expo_factor * i_total * j_total;        
                 clearvars expo_factor i_total j_total;
             end
@@ -86,7 +87,8 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         spinUpGreenFunction(i_diag, i_diag) = diagonal_elem_up;
     end
     
-    clearvars sizeSpacePlusOne eigenVectors eigenValues diagonal_elem_up;
+    clearvars sizeSpacePlusOne eigenVectors_up eigenValues_up diagonal_elem_up;
+    
 %% SPIN DOWN:        
     disp('Begin spin-down calculations.'); % for debugging
     if NUM_OF_EIGEN_VALUES >= expanded_space_size_dn
@@ -96,9 +98,10 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         NUM_OF_EIGEN_VALUES_DN = NUM_OF_EIGEN_VALUES;
     end
 
-    [eigenVectors, eigenValues] = eigs( hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn + 1 ), ...
+    [eigenVectors_dn, eigenValues_dn] = eigs( hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn + 1 ), ...
                                             NUM_OF_EIGEN_VALUES_DN, 'sa', OPTS);
-    eigenValues = diag(eigenValues);
+    eigenValues_dn = diag(eigenValues_dn);
+    save(savedFileName,'-append','eigenVectors_dn','eigenValues_dn');
     disp('Off-diagonal elements: ');
     for i_site=1:noOfSites 
         fprintf('Working on i = %d\n', i_site)
@@ -110,9 +113,9 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
                                                 groundState;
             k_sum = 0;
             for k_eigenValues = 1:NUM_OF_EIGEN_VALUES_DN %sum over k
-                expo_factor = exp( tau*( groundStateEnergy - eigenValues(k_eigenValues)));                
-                i_total = left_wave_function * eigenVectors(:,k_eigenValues);
-                j_total = dot( right_wave_function, conj(eigenVectors(:,k_eigenValues)) );
+                expo_factor = exp( tau*( groundStateEnergy - eigenValues_dn(k_eigenValues)));                
+                i_total = left_wave_function * eigenVectors_dn(:,k_eigenValues);
+                j_total = dot( right_wave_function, conj(eigenVectors_dn(:,k_eigenValues)) );
                 k_sum = k_sum + expo_factor * i_total * j_total;
                 
                 clearvars expo_factor i_total j_total;
@@ -132,9 +135,9 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
                 groundState;
             k_sum = 0;
             for k_eigenValues = 1:NUM_OF_EIGEN_VALUES_UP %sum over k
-                expo_factor = exp( tau*( groundStateEnergy - eigenValues(k_eigenValues)));
-                i_total = left_wave_function * eigenVectors(:,k_eigenValues);
-                j_total = dot( right_wave_function, conj(eigenVectors(:,k_eigenValues)) );
+                expo_factor = exp( tau*( groundStateEnergy - eigenValues_dn(k_eigenValues)));
+                i_total = left_wave_function * eigenVectors_dn(:,k_eigenValues);
+                j_total = dot( right_wave_function, conj(eigenVectors_dn(:,k_eigenValues)) );
                 k_sum = k_sum + expo_factor * i_total * j_total;        
                 clearvars expo_factor i_total j_total;
             end
@@ -145,7 +148,8 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         spinDnGreenFunction(i_diag, i_diag) = diagonal_elem_dn;
     end
     
-    clearvars sizeSpacePlusOne eigenVectors eigenValues diagonal_elem_dn;
+    clearvars sizeSpacePlusOne eigenVectors_dn eigenValues_dn diagonal_elem_dn;
+
 
 else
     error('Error: cannot apply creation operator when number of electrons = number of sites');
