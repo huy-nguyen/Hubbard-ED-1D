@@ -8,7 +8,7 @@ inp.in_U = 4;
 inp.in_noOfSites = 5;
 inp.in_noOfUp = 3;
 inp.in_noOfDn = 3;
-inp.NUM_EIGEN_VALUES = 21; %21 is the smallest value that we can get away with such that the result still agrees with the brute-force results to within 0.1%
+inp.NUM_EIGEN_VALUES = 23; %21 is the smallest value that we can get away with such that the result still agrees with the brute-force results to within 0.1%
 end
 
 function teardown(inp)
