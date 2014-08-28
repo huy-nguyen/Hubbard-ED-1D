@@ -136,7 +136,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
             right_wave_function = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'dn' ) * ...
                 groundState;
             k_sum = 0;
-            for k_eigenValues = 1:NUM_OF_EIGEN_VALUES_UP %sum over k
+            for k_eigenValues = 1:NUM_OF_EIGEN_VALUES_DN %sum over k
                 expo_factor = exp( tau*( groundStateEnergy - eigenValues_dn(k_eigenValues)));
                 i_total = left_wave_function * eigenVectors_dn(:,k_eigenValues);
                 j_total = dot( right_wave_function, conj(eigenVectors_dn(:,k_eigenValues)) );
