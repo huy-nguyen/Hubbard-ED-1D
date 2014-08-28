@@ -19,6 +19,7 @@ savedFileName=strcat('ED_',int2str(noOfSites),...
 tic;
 
 if (noOfUp < noOfSites) && (noOfDn < noOfSites)
+    fprintf('Begin calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     spinUpGreenFunction=zeros(noOfSites);
     spinDnGreenFunction=zeros(noOfSites);
     
@@ -27,9 +28,10 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
                                                1,'sa'); %ASSUMING THAT THE HAMILTONIAN IS REAL SYMMETRIC
     save(savedFileName,'groundState','groundStateEnergy'); %save variables...    
     fprintf('\nData file: %s\n', savedFileName)
-    disp('Begin spin-up calculations.'); % for debugging
+    
        
 %% SPIN UP:
+    fprintf('Begin spin-up calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     if NUM_OF_EIGEN_VALUES >= expanded_space_size_up
         NUM_OF_EIGEN_VALUES_UP = expanded_space_size_up - 1;
         fprintf('NUM_EIGEN_VALUES exceeds dimension of spin-up matrix. Now set to %d\n', NUM_OF_EIGEN_VALUES_UP)
@@ -41,7 +43,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
                                             NUM_OF_EIGEN_VALUES_UP, 'sa', OPTS);
     eigenValues_up = diag(eigenValues_up);
     save(savedFileName,'-append','eigenValues_up','eigenVectors_up');
-    disp('Off-diagonal elements: ');
+    fprintf('Begin calculating off-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     for i_site=1:noOfSites        
         fprintf('Working on i = %d\n', i_site)
         destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )'; 
@@ -65,7 +67,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         clearvars destructionMatrix left_wave_function;
     end
     
-    disp('On-diagonal elements: ');
+    fprintf('Begin calculating on-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     i_site = 1;
         destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
         left_wave_function =  (groundState') * destructionMatrix;    
@@ -90,7 +92,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     clearvars sizeSpacePlusOne eigenVectors_up eigenValues_up diagonal_elem_up;
     
 %% SPIN DOWN:        
-    disp('Begin spin-down calculations.'); % for debugging
+    fprintf('Begin spin-down calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     if NUM_OF_EIGEN_VALUES >= expanded_space_size_dn
         NUM_OF_EIGEN_VALUES_DN = expanded_space_size_dn - 1;
         fprintf('NUM_EIGEN_VALUES exceeds dimension of spin-down matrix. Now set to %d\n', NUM_OF_EIGEN_VALUES_DN)
@@ -102,7 +104,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
                                             NUM_OF_EIGEN_VALUES_DN, 'sa', OPTS);
     eigenValues_dn = diag(eigenValues_dn);
     save(savedFileName,'-append','eigenVectors_dn','eigenValues_dn');
-    disp('Off-diagonal elements: ');
+    fprintf('Begin calculating off-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     for i_site=1:noOfSites 
         fprintf('Working on i = %d\n', i_site)
         destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'dn' )'; 
@@ -126,7 +128,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         clearvars destructionMatrix left_wave_function;
     end
     
-    disp('On-diagonal elements: ');
+    fprintf('Begin calculating on-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     i_site = 1;
         destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'dn' )';
         left_wave_function =  (groundState') * destructionMatrix;    
@@ -159,7 +161,7 @@ time=toc
 save(savedFileName,'-append','noOfSites','noOfUp','noOfDn','U','tau','t','time');
 save(savedFileName, '-append','spinUpGreenFunction', 'spinDnGreenFunction');
 disp('Saved spinUpGreenFunction, spinDnGreenFunction.');
-
+fprintf('Finish all calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
 
 
 end
