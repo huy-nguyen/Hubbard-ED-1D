@@ -45,11 +45,11 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     save(savedFileName,'-append','eigenValues_up','eigenVectors_up');
     fprintf('Begin calculating off-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     for i_site=1:noOfSites        
-        fprintf('Working on i = %d\n', i_site)
+        fprintf('Working on i = %3d     at time %s\n', i_site, datestr(now,'yymmdd_HHMMSS'))
         destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )'; 
         left_wave_function =  (groundState') * destructionMatrix; 
         for j_site=(i_site+1):noOfSites % maybe consider j_site=i_site:noOfSites ?
-            fprintf('Working on j =    %d\n', j_site)
+            fprintf('Working on j =     %3d at time %s\n', j_site, datestr(now,'yymmdd_HHMMSS'))
             right_wave_function = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'up' ) * ...
                                                 groundState;
             k_sum = 0;
@@ -67,7 +67,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         clearvars destructionMatrix left_wave_function;
     end
     
-    fprintf('Begin calculating on-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
+    fprintf('Begin calculating on-diagonal elements at time  %s.\n', datestr(now,'yymmdd_HHMMSS'))
     i_site = 1;
         destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
         left_wave_function =  (groundState') * destructionMatrix;    
@@ -106,11 +106,11 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     save(savedFileName,'-append','eigenVectors_dn','eigenValues_dn');
     fprintf('Begin calculating off-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     for i_site=1:noOfSites 
-        fprintf('Working on i = %d\n', i_site)
+        fprintf('Working on i = %3d     at time %s\n', i_site, datestr(now,'yymmdd_HHMMSS'))
         destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'dn' )'; 
         left_wave_function =  (groundState') * destructionMatrix; 
         for j_site=(i_site+1):noOfSites % maybe consider j_site=i_site:noOfSites ?
-            fprintf('Working on j =    %d\n', j_site)
+            fprintf('Working on j =     %3d at time %s\n', j_site, datestr(now,'yymmdd_HHMMSS'))
             right_wave_function = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'dn' ) * ...
                                                 groundState;
             k_sum = 0;
@@ -128,7 +128,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         clearvars destructionMatrix left_wave_function;
     end
     
-    fprintf('Begin calculating on-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
+    fprintf('Begin calculating on-diagonal elements at time  %s.\n', datestr(now,'yymmdd_HHMMSS'))
     i_site = 1;
         destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'dn' )';
         left_wave_function =  (groundState') * destructionMatrix;    
