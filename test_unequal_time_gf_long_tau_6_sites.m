@@ -2,7 +2,7 @@ function test_suite = test_unequal_time_gf_long_tau_6_sites
 initTestSuite;
 global in_NUM_EIGEN_VALUES_UP;
 global in_NUM_EIGEN_VALUES_DN;
-in_NUM_EIGEN_VALUES_UP = 15; % These are the smallest values that we can get away with such that the result still agrees with the brute-force results to within 0.1%
+in_NUM_EIGEN_VALUES_UP = 17; % These are the smallest values that we can get away with such that the result still agrees with the brute-force results to within 0.1%
 in_NUM_EIGEN_VALUES_DN = 9;
 end
 
