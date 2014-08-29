@@ -7,17 +7,7 @@ OPTS.isreal = 1;
 expanded_space_size_up = nchoosek(noOfSites,noOfUp+1)*nchoosek(noOfSites,noOfDn);
 expanded_space_size_dn = nchoosek(noOfSites,noOfUp)*nchoosek(noOfSites,noOfDn + 1);
 format compact;
-tau = tau_start; % will be removed
-savedFileName=strcat('ED_',num2str(noOfSites, '%02d'),...
-                    '_sites_',num2str(noOfUp, '%02d'),...
-                    'u',num2str(noOfDn, '%02d'),...
-                    'd_U_',num2str(U, '%4.2f'),...
-                    '_tau_',num2str(tau, '%4.2f'),...
-                    '_t_',num2str(t),...
-                    '_eigen_', num2str(NUM_OF_EIGEN_VALUES, '%04d'),...
-                    ' ',datestr(now,'_yymmdd_HHMMSS'),'.mat');
 
-pause(2);
 output_files = {};
 list_of_taus = tau_start:tau_step:tau_end;
 for i_filename = tau_start:tau_step:tau_end
@@ -43,14 +33,12 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     [groundState,groundStateEnergy]=eigs( hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn ),...
                                                1,'sa'); %ASSUMING THAT THE HAMILTONIAN IS REAL SYMMETRIC
                                            
-    save(savedFileName,'groundState','groundStateEnergy'); %save variables...     
     for i_f = 1:length(output_files)
         save(output_files{i_f},'groundState','groundStateEnergy');            
     end     
     clearvars i_f;
     
-    fprintf('\nData file: %s\n', savedFileName)
-    
+    % NEED TO PRINT OUT DATA FILES
        
 %% SPIN UP:
     fprintf('Begin spin-up calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
@@ -65,7 +53,6 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
                                             NUM_OF_EIGEN_VALUES_UP, 'sa', OPTS);
     eigenValues_up = diag(eigenValues_up);
     
-    save(savedFileName,'-append','eigenValues_up','eigenVectors_up');       
     for i_f = 1:length(output_files)
         save(output_files{i_f},'-append','eigenValues_up','eigenVectors_up');            
     end     
@@ -142,7 +129,6 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
                                             NUM_OF_EIGEN_VALUES_DN, 'sa', OPTS);
     eigenValues_dn = diag(eigenValues_dn);
     
-    save(savedFileName,'-append','eigenVectors_dn','eigenValues_dn');          
     for i_f = 1:length(output_files)
         save(output_files{i_f},'-append','eigenVectors_dn','eigenValues_dn');            
     end     
@@ -212,15 +198,10 @@ else
 end
 
 time=toc
-save(savedFileName,'-append','noOfSites','noOfUp','noOfDn','U','tau','t','time', 'NUM_OF_EIGEN_VALUES_UP', 'NUM_OF_EIGEN_VALUES_DN');
     
 for i_f = 1:length(output_files)
     save(output_files{i_f},'-append','noOfSites','noOfUp','noOfDn','U','tau','t','time', 'NUM_OF_EIGEN_VALUES_UP', 'NUM_OF_EIGEN_VALUES_DN');            
 end     
-clearvars i_f;
-% save(savedFileName, '-append','spinUpGreenFunction', 'spinDnGreenFunction');
-clearvars i_f;
-disp('Saved spinUpGreenFunction, spinDnGreenFunction.');
 fprintf('Finish all calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
 
 
