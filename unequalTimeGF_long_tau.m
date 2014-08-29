@@ -21,7 +21,13 @@ for i_filename = 1:length(list_of_taus)
                                         '_eigen_', num2str(NUM_OF_EIGEN_VALUES, '%04d'),...
                                         ' ',datestr(now,'_yymmdd_HHMMSS'),'.mat');
 end
-        
+    
+
+fprintf('Begin calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
+fprintf('%03d data files:\n', length(list_of_taus))
+for i_dat_files = 1:length(list_of_taus)
+    disp(output_files{i_dat_files});
+end
 
 aux_file_name = strcat('aux_',num2str(noOfSites, '%02d'),...
                                     '_sites_',num2str(noOfUp, '%02d'),...
@@ -35,8 +41,7 @@ aux_file_name = strcat('aux_',num2str(noOfSites, '%02d'),...
 tic;
 
 if (noOfUp < noOfSites) && (noOfDn < noOfSites)
-    fprintf('Begin calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
-    
+    fprintf('Begin diagonalizing firstHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     [groundState,groundStateEnergy]=eigs( hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn ),...
                                                1,'sa'); %ASSUMING THAT THE HAMILTONIAN IS REAL SYMMETRIC
                                            
@@ -44,18 +49,13 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     aux_file = matfile(aux_file_name);
     
     for i_f = 1:length(output_files)
-        save(output_files{i_f},'groundState','groundStateEnergy');            
+        save(output_files{i_f},'groundState','groundStateEnergy', '-v7.3');            
     end     
     clearvars i_f;
     clearvars groundState;
+    fprintf('Done with diagonalization at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     
-    fprintf('%03d data files:\n', length(list_of_taus))
-    for i_dat_files = 1:length(list_of_taus)
-        disp(output_files{i_dat_files});
-    end
-       
-%% SPIN UP:
-    fprintf('\nBegin spin-up calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
+    fprintf('Begin diagonalizing spin-up of secondHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     if NUM_OF_EIGEN_VALUES >= expanded_space_size_up
         NUM_OF_EIGEN_VALUES_UP = expanded_space_size_up - 1;
         fprintf('NUM_EIGEN_VALUES exceeds dimension of spin-up matrix. Now set to %d\n', NUM_OF_EIGEN_VALUES_UP)
@@ -70,9 +70,33 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     
     save( aux_file_name, '-append', 'eigenVectors_up', 'eigenValues_up', '-mat', '-v7.3');
     for i_f = 1:length(output_files)
-        save(output_files{i_f},'-append','eigenValues_up','eigenVectors_up');            
+        save(output_files{i_f},'-append','eigenValues_up','eigenVectors_up', '-v7.3');            
     end     
     clearvars i_f eigenVectors_up;
+    
+       
+    
+    fprintf('Begin diagonalizing spin-dn of secondHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
+    if NUM_OF_EIGEN_VALUES >= expanded_space_size_dn
+        NUM_OF_EIGEN_VALUES_DN = expanded_space_size_dn - 1;
+        fprintf('NUM_EIGEN_VALUES exceeds dimension of spin-down matrix. Now set to %d\n', NUM_OF_EIGEN_VALUES_DN)
+    else
+        NUM_OF_EIGEN_VALUES_DN = NUM_OF_EIGEN_VALUES;
+    end
+
+    [eigenVectors_dn, eigenValues_dn] = eigs( hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn + 1 ), ...
+                                            NUM_OF_EIGEN_VALUES_DN, 'sa', OPTS);
+    eigenValues_dn = diag(eigenValues_dn);
+    fprintf('Done with diagonalization at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
+    save( aux_file_name, '-append', 'eigenVectors_dn', 'eigenVectors_dn', '-mat', '-v7.3');
+    for i_f = 1:length(output_files)
+        save(output_files{i_f},'-append','eigenVectors_dn','eigenValues_dn', '-v7.3');            
+    end     
+    clearvars i_f eigenVectors_dn;
+    
+    
+%% SPIN UP:
+    fprintf('Begin spin up calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     for t_tau = 1:length(output_files) % loop over taus
     
         tau = list_of_taus(t_tau);
@@ -82,8 +106,8 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         fprintf('        Begin calculating off-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
         for i_site=1:noOfSites        
             fprintf('        Working on i = %3d     at time %s\n', i_site, datestr(now,'yymmdd_HHMMSS'))
-            destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )'; 
-            left_wave_function =  (aux_file.groundState') * destructionMatrix; 
+            left_wave_function = (aux_file.groundState') * ...
+                                                        creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
             save( aux_file_name, '-append', 'left_wave_function', '-mat', '-v7.3');
             clearvars left_wave_function;
             for j_site=(i_site+1):noOfSites 
@@ -118,8 +142,8 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
 
         fprintf('        Begin calculating on-diagonal elements at time  %s.\n', datestr(now,'yymmdd_HHMMSS'))
         i_site = 1;
-            destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
-            left_wave_function =  (aux_file.groundState') * destructionMatrix; 
+            left_wave_function = (aux_file.groundState') * ...
+                                                    creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
             save( aux_file_name,'-append',  'left_wave_function', '-mat', '-v7.3');
             clearvars left_wave_function;   
             j_site = 1;  
@@ -150,31 +174,14 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         save( aux_file_name, '-append', 'creationMatrix', '-mat', '-v7.3');
 
         clearvars diagonal_elem_up;
-        save(output_files{t_tau}, '-append', 'spinUpGreenFunction');
+        save(output_files{t_tau}, '-append', 'spinUpGreenFunction', '-v7.3');
         clearvars spinUpGreenFunction;
     end
     clearvars t_tau;
     clearvars sizeSpacePlusOne eigenVectors_up eigenValues_up ;
     
 %% SPIN DOWN:        
-    fprintf('Begin spin-down calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
-    if NUM_OF_EIGEN_VALUES >= expanded_space_size_dn
-        NUM_OF_EIGEN_VALUES_DN = expanded_space_size_dn - 1;
-        fprintf('NUM_EIGEN_VALUES exceeds dimension of spin-down matrix. Now set to %d\n', NUM_OF_EIGEN_VALUES_DN)
-    else
-        NUM_OF_EIGEN_VALUES_DN = NUM_OF_EIGEN_VALUES;
-    end
-
-    [eigenVectors_dn, eigenValues_dn] = eigs( hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn + 1 ), ...
-                                            NUM_OF_EIGEN_VALUES_DN, 'sa', OPTS);
-    eigenValues_dn = diag(eigenValues_dn);
-    fprintf('Done with diagonalization at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
-    save( aux_file_name, '-append', 'eigenVectors_dn', 'eigenVectors_dn', '-mat', '-v7.3');
-    for i_f = 1:length(output_files)
-        save(output_files{i_f},'-append','eigenVectors_dn','eigenValues_dn');            
-    end     
-    clearvars i_f eigenVectors_dn;
-
+    fprintf('Begin spin down calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     for t_tau = 1:length(output_files) % loop over taus
         
         tau = list_of_taus(t_tau);
@@ -184,8 +191,8 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         fprintf('        Begin calculating off-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
         for i_site=1:noOfSites 
             fprintf('        Working on i = %3d     at time %s\n', i_site, datestr(now,'yymmdd_HHMMSS'))
-            destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'dn' )'; 
-            left_wave_function =  (aux_file.groundState') * destructionMatrix; 
+            left_wave_function = (aux_file.groundState') * ...
+                                                  creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'dn' )';
             save( aux_file_name, '-append', 'left_wave_function', '-mat', '-v7.3');
             clearvars left_wave_function;
             
@@ -217,10 +224,10 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
             save( aux_file_name, '-append', 'destructionMatrix', 'left_wave_function', '-mat', '-v7.3');
         end
 
-        fprintf('    Begin calculating on-diagonal elements at time  %s.\n', datestr(now,'yymmdd_HHMMSS'))
+        fprintf('        Begin calculating on-diagonal elements at time  %s.\n', datestr(now,'yymmdd_HHMMSS'))
         i_site = 1;
-            destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'dn' )';
-            left_wave_function =  (aux_file.groundState') * destructionMatrix; 
+            left_wave_function = (aux_file.groundState') * ...
+                                                creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'dn' )';
             save( aux_file_name,'-append',  'left_wave_function', '-mat', '-v7.3');
             clearvars left_wave_function;      
             j_site = 1;  
@@ -250,7 +257,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         save( aux_file_name, '-append', 'creationMatrix', '-mat', '-v7.3');
         
         clearvars diagonal_elem_dn;
-        save(output_files{t_tau}, '-append', 'spinDnGreenFunction');
+        save(output_files{t_tau}, '-append', 'spinDnGreenFunction', '-v7.3');
         clearvars spinDnGreenFunction;
     end
     clearvars t_tau;
@@ -265,7 +272,7 @@ time=toc
     
 for i_f = 1:length(output_files)
     tau = list_of_taus(i_f);
-    save(output_files{i_f},'-append','noOfSites','noOfUp','noOfDn','U','tau','t','time', 'NUM_OF_EIGEN_VALUES_UP', 'NUM_OF_EIGEN_VALUES_DN', 'method', 'commit_number');            
+    save(output_files{i_f},'-append','noOfSites','noOfUp','noOfDn','U','tau','t','time', 'NUM_OF_EIGEN_VALUES_UP', 'NUM_OF_EIGEN_VALUES_DN', 'method', 'commit_number', '-v7.3');            
 end     
 fprintf('Finish all calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
 

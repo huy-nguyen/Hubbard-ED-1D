@@ -40,10 +40,7 @@ function test_5_sites(inp)
             ' ',datestr(now,'_yymmdd_HHMMSS'),'.mat');
     end
     
-    disp(expected_file_names);
-    disp(list_of_generated_files);
     for i=1:length(expected_file_names)
-        disp(i);
         expected = expected_file_names{i}(1:50);
         result = list_of_generated_files{i}(1:50);
         assertEqual( result, expected );
@@ -100,8 +97,6 @@ function test_5_sites(inp)
         -0.031364 0.012102 0.012102 -0.031364 0.040428],...
         'relative', 0.001);
    clearvars spinDnGreenFunction;
-
-   disp('aaaa');
    
     load( list_of_generated_files{3}, '-mat', 'spinDnGreenFunction'); % tau = 1
     assertElementsAlmostEqual(spinDnGreenFunction,...
