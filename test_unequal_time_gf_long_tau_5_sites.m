@@ -2,12 +2,6 @@ function test_suite = test_unequal_time_gf_long_tau_5_sites
 initTestSuite;
 global in_NUM_EIGEN_VALUES;
 in_NUM_EIGEN_VALUES = 23; % These are the smallest values that we can get away with such that the result still agrees with the brute-force results to within 0.1%
-% global tau_start;
-% global tau_end;
-% global tau_step;
-% tau_start = 0.0;
-% tau_end = 1.0;
-% tau_step = 0.5;
 end
 
 function inp = setup
@@ -19,6 +13,8 @@ inp.in_noOfDn = 3;
 inp.tau_start = 0.0;
 inp.tau_step = 0.5;
 inp.tau_end = 1.0;
+inp.method = 'long_tau';
+inp.commit_number = 'testtesttest';
 end
 
 function teardown(inp)
@@ -27,11 +23,8 @@ end
 
 function test_5_sites(inp)
     global in_NUM_EIGEN_VALUES;
-%     global tau_start;
-%     global tau_end;
-%     global tau_step;
 
-    [ list_of_generated_files ] = unequalTimeGF_long_tau( inp.in_t, inp.in_U, inp.tau_start, inp.tau_end, inp.tau_step, inp.in_noOfSites, inp.in_noOfUp, inp.in_noOfDn, in_NUM_EIGEN_VALUES );
+    [ list_of_generated_files ] = unequalTimeGF_long_tau( inp.in_t, inp.in_U, inp.tau_start, inp.tau_end, inp.tau_step, inp.in_noOfSites, inp.in_noOfUp, inp.in_noOfDn, in_NUM_EIGEN_VALUES, inp.method, inp.commit_number );
     
     expected_file_names = {};
     list_of_taus = inp.tau_start:inp.tau_step:inp.tau_end;

@@ -18,6 +18,8 @@ inp.in_U = 4;
 inp.in_noOfSites = 6;
 inp.in_noOfUp = 3;
 inp.in_noOfDn = 5;
+inp.method = 'long_tau';
+inp.commit_number = 'testtesttest';
 end
 
 function teardown(inp)
@@ -30,7 +32,7 @@ function test_unqual_time_gf_up_6(inp)
     global in_tau_end;
     global in_tau_step;
 
-    list_of_generated_files = unequalTimeGF_long_tau( inp.in_t, inp.in_U, in_tau_start, in_tau_end, in_tau_step, inp.in_noOfSites, inp.in_noOfUp, inp.in_noOfDn, in_NUM_EIGEN_VALUES_UP );
+    list_of_generated_files = unequalTimeGF_long_tau( inp.in_t, inp.in_U, in_tau_start, in_tau_end, in_tau_step, inp.in_noOfSites, inp.in_noOfUp, inp.in_noOfDn, in_NUM_EIGEN_VALUES_UP, inp.method, inp.commit_number );
     
     expected_file_names = {};
     list_of_taus = in_tau_start:in_tau_step:in_tau_end;
@@ -94,7 +96,7 @@ function test_unqual_time_gf_dn_6(inp)
     global in_tau_end;
     global in_tau_step;
 
-    list_of_generated_files = unequalTimeGF_long_tau( inp.in_t, inp.in_U, in_tau_start, in_tau_end, in_tau_step, inp.in_noOfSites, inp.in_noOfUp, inp.in_noOfDn, in_NUM_EIGEN_VALUES_DN );
+    list_of_generated_files = unequalTimeGF_long_tau( inp.in_t, inp.in_U, in_tau_start, in_tau_end, in_tau_step, inp.in_noOfSites, inp.in_noOfUp, inp.in_noOfDn, in_NUM_EIGEN_VALUES_DN, inp.method, inp.commit_number );
     
     expected_file_names = {};
     list_of_taus = in_tau_start:in_tau_step:in_tau_end;
