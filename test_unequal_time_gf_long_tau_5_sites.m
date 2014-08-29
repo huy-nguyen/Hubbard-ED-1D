@@ -1,13 +1,13 @@
-function test_suite = test_unequal_time_gf_long_tau_6_sites
+function test_suite = test_unequal_time_gf_long_tau_5_sites
 initTestSuite;
 global in_NUM_EIGEN_VALUES;
 in_NUM_EIGEN_VALUES = 23; % These are the smallest values that we can get away with such that the result still agrees with the brute-force results to within 0.1%
-global in_tau_start;
-global in_tau_end;
-global in_tau_step;
-in_tau_start = 0.0;
-in_tau_end = 1.0;
-in_tau_step = 0.5;
+% global tau_start;
+% global tau_end;
+% global tau_step;
+% tau_start = 0.0;
+% tau_end = 1.0;
+% tau_step = 0.5;
 end
 
 function inp = setup
@@ -16,22 +16,25 @@ inp.in_U = 4;
 inp.in_noOfSites = 5;
 inp.in_noOfUp = 3;
 inp.in_noOfDn = 3;
+inp.tau_start = 0.0;
+inp.tau_step = 0.5;
+inp.tau_end = 1.0;
 end
 
 function teardown(inp)
 % do nothing
 end
 
-function test_unqual_time_gf_up(inp)
+function test_5_sites(inp)
     global in_NUM_EIGEN_VALUES;
-    global in_tau_start;
-    global in_tau_end;
-    global in_tau_step;
+%     global tau_start;
+%     global tau_end;
+%     global tau_step;
 
-    [ list_of_generated_files ] = unequalTimeGF_long_tau( inp.in_t, inp.in_U, in_tau_start, in_tau_end, in_tau_step, inp.in_noOfSites, inp.in_noOfUp, inp.in_noOfDn, in_NUM_EIGEN_VALUES );
+    [ list_of_generated_files ] = unequalTimeGF_long_tau( inp.in_t, inp.in_U, inp.tau_start, inp.tau_end, inp.tau_step, inp.in_noOfSites, inp.in_noOfUp, inp.in_noOfDn, in_NUM_EIGEN_VALUES );
     
     expected_file_names = {};
-    list_of_taus = in_tau_start:in_tau_step:in_tau_end;
+    list_of_taus = inp.tau_start:inp.tau_step:inp.tau_end;
     for i_filename = 1:length(list_of_taus)
         tau = list_of_taus(i_filename);
         expected_file_names{i_filename} = strcat('ED_',num2str(inp.in_noOfSites, '%02d'),...
@@ -44,6 +47,8 @@ function test_unqual_time_gf_up(inp)
             ' ',datestr(now,'_yymmdd_HHMMSS'),'.mat');
     end
     
+    disp(expected_file_names);
+    disp(list_of_generated_files);
     for i=1:length(expected_file_names)
         disp(i);
         expected = expected_file_names{i}(1:50);

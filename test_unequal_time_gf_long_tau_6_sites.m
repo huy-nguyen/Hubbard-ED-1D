@@ -24,7 +24,7 @@ function teardown(inp)
 % do nothing
 end
 
-function test_unqual_time_gf_up(inp)
+function test_unqual_time_gf_up_6(inp)
     global in_NUM_EIGEN_VALUES_UP;
     global in_tau_start;
     global in_tau_end;
@@ -88,7 +88,7 @@ function test_unqual_time_gf_up(inp)
 
 end
 
-function test_unqual_time_gf_dn(inp)
+function test_unqual_time_gf_dn_6(inp)
     global in_NUM_EIGEN_VALUES_DN;
     global in_tau_start;
     global in_tau_end;
