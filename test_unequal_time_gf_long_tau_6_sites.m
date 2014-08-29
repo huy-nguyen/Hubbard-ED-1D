@@ -30,7 +30,7 @@ function test_unqual_time_gf_up(inp)
     global in_tau_end;
     global in_tau_step;
 
-    [ list_of_generated_files ] = unequalTimeGF_long_tau( inp.in_t, inp.in_U, in_tau_start, in_tau_end, in_tau_step, inp.in_noOfSites, inp.in_noOfUp, inp.in_noOfDn, in_NUM_EIGEN_VALUES_UP );
+    list_of_generated_files = unequalTimeGF_long_tau( inp.in_t, inp.in_U, in_tau_start, in_tau_end, in_tau_step, inp.in_noOfSites, inp.in_noOfUp, inp.in_noOfDn, in_NUM_EIGEN_VALUES_UP );
     
     expected_file_names = {};
     for i_filename = in_tau_start:in_tau_step:in_tau_end
@@ -84,6 +84,34 @@ function test_unqual_time_gf_up(inp)
    clearvars spinUpGreenFunction;
     
 
+end
+
+function test_unqual_time_gf_dn(inp)
+    global in_NUM_EIGEN_VALUES_DN;
+    global in_tau_start;
+    global in_tau_end;
+    global in_tau_step;
+
+    list_of_generated_files = unequalTimeGF_long_tau( inp.in_t, inp.in_U, in_tau_start, in_tau_end, in_tau_step, inp.in_noOfSites, inp.in_noOfUp, inp.in_noOfDn, in_NUM_EIGEN_VALUES_DN );
+    
+    expected_file_names = {};
+    for i_filename = in_tau_start:in_tau_step:in_tau_end
+        expected_file_names{i_filename} = strcat('ED_',num2str(inp.in_noOfSites, '%02d'),...
+            '_sites_',num2str(inp.in_noOfUp, '%02d'),...
+            'u',num2str(inp.in_noOfDn, '%02d'),...
+            'd_U_',num2str(inp.in_U, '%4.2f'),...
+            '_tau_',num2str(i_filename, '%4.2f'),...
+            '_t_',num2str(inp.in_t),...
+            '_eigen_', num2str(in_NUM_EIGEN_VALUES_DN, '%04d'),...
+            ' ',datestr(now,'_yymmdd_HHMMSS'),'.mat');
+    end
+    
+    for i=1:length(expected_file_names)
+        expected = expected_file_names{i}(1:50);
+        result = list_of_generated_files{i}(1:50);
+        assertEqual( result, expected );
+    end
+
     load( list_of_generated_files{1}, '-mat', 'spinDnGreenFunction'); % tau = 1
     assertElementsAlmostEqual(spinDnGreenFunction,...
        [0.001352 -0.0013343 0.0013278 -0.0013178 0.0013278 -0.0013343;...
@@ -105,8 +133,6 @@ function test_unqual_time_gf_up(inp)
         -1.2141e-05 1.2133e-05 -1.2118e-05 1.2133e-05 -1.2141e-05 1.216e-05],...
            'relative', 0.001);
    clearvars spinDnGreenFunction;
-
-   disp('aaaa');
    
     load( list_of_generated_files{3}, '-mat', 'spinDnGreenFunction'); % tau = 3
     assertElementsAlmostEqual(spinDnGreenFunction,...
@@ -118,4 +144,5 @@ function test_unqual_time_gf_up(inp)
         -1.1058e-07 1.1057e-07 -1.1055e-07 1.1057e-07 -1.1058e-07 1.106e-07],...
                 'relative', 0.001);
    clearvars spinDnGreenFunction;
+   
 end
