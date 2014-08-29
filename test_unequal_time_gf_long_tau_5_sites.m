@@ -15,6 +15,8 @@ inp.tau_step = 0.5;
 inp.tau_end = 1.0;
 inp.method = 'long_tau';
 inp.commit_number = 'testtesttest';
+inp.sector = 'both';
+inp.need_profiling = 'No';
 end
 
 function teardown(inp)
@@ -24,7 +26,8 @@ end
 function test_5_sites(inp)
     global in_NUM_EIGEN_VALUES;
 
-    [ list_of_generated_files ] = unequalTimeGF_long_tau( inp.in_t, inp.in_U, inp.tau_start, inp.tau_end, inp.tau_step, inp.in_noOfSites, inp.in_noOfUp, inp.in_noOfDn, in_NUM_EIGEN_VALUES, inp.method, inp.commit_number );
+    [ list_of_generated_files ] = ...
+         unequalTimeGF_long_tau( inp.in_t, inp.in_U, inp.tau_start, inp.tau_end, inp.tau_step, inp.in_noOfSites, inp.in_noOfUp, inp.in_noOfDn, in_NUM_EIGEN_VALUES, inp.sector, inp.method, inp.commit_number, inp.need_profiling );
     
     expected_file_names = {};
     list_of_taus = inp.tau_start:inp.tau_step:inp.tau_end;

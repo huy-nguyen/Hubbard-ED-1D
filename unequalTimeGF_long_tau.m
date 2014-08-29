@@ -1,4 +1,4 @@
-function output_files = unequalTimeGF_long_tau( t, U, tau_start, tau_end, tau_step, noOfSites, noOfUp, noOfDn, NUM_OF_EIGEN_VALUES, method, commit_number )
+function output_files = unequalTimeGF_long_tau( t, U, tau_start, tau_end, tau_step, noOfSites, noOfUp, noOfDn, NUM_OF_EIGEN_VALUES, sector, method, commit_number, need_profiling )
 % calculate the unequal time GF by using series expansion
 
 OPTS.issym = 1;
@@ -51,7 +51,9 @@ aux_file_name = strcat('aux_',num2str(noOfSites, '%02d'),...
                                 
 
 tic;
-profile -memory on;
+if strcmp( need_profiling, 'Yes' )
+    profile -memory on;
+end
 
 if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     fprintf('Begin diagonalizing firstHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
@@ -281,14 +283,17 @@ end
 
 time=toc
 
-profile off;
-    
+if strcmp( need_profiling, 'Yes' )
+    profile off;
+end
+
 for i_f = 1:length(output_files)
     tau = list_of_taus(i_f);
     save(output_files{i_f},'-append','noOfSites','noOfUp','noOfDn','U','tau','t','time', 'NUM_OF_EIGEN_VALUES_UP', 'NUM_OF_EIGEN_VALUES_DN', 'method', 'commit_number', '-v7.3');            
 end     
 fprintf('Finish all calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
 
-profsave(profile('info'), profile_directory_name);
-
+if strcmp( need_profiling, 'Yes' )
+    profsave(profile('info'), profile_directory_name);
+end
 end
