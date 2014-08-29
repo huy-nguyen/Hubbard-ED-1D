@@ -20,7 +20,6 @@ inp.in_noOfUp = 3;
 inp.in_noOfDn = 5;
 inp.method = 'long_tau';
 inp.commit_number = 'testtesttest';
-inp.sector = 'both';
 inp.need_profiling = 'No';
 end
 
@@ -33,9 +32,10 @@ function test_unqual_time_gf_up_6(inp)
     global in_tau_start;
     global in_tau_end;
     global in_tau_step;
+    sector = 'up';
 
     list_of_generated_files = ...
-        unequalTimeGF_long_tau( inp.in_t, inp.in_U, in_tau_start, in_tau_end, in_tau_step, inp.in_noOfSites, inp.in_noOfUp, inp.in_noOfDn, in_NUM_EIGEN_VALUES_UP, inp.sector, inp.method, inp.commit_number, inp.need_profiling );
+        unequalTimeGF_long_tau( inp.in_t, inp.in_U, in_tau_start, in_tau_end, in_tau_step, inp.in_noOfSites, inp.in_noOfUp, inp.in_noOfDn, in_NUM_EIGEN_VALUES_UP, sector, inp.method, inp.commit_number, inp.need_profiling );
     
     expected_file_names = {};
     list_of_taus = in_tau_start:in_tau_step:in_tau_end;
@@ -98,9 +98,10 @@ function test_unqual_time_gf_dn_6(inp)
     global in_tau_start;
     global in_tau_end;
     global in_tau_step;
+    sector = 'dn';
 
     list_of_generated_files = ...
-        unequalTimeGF_long_tau( inp.in_t, inp.in_U, in_tau_start, in_tau_end, in_tau_step, inp.in_noOfSites, inp.in_noOfUp, inp.in_noOfDn, in_NUM_EIGEN_VALUES_DN, inp.sector, inp.method, inp.commit_number, inp.need_profiling );
+        unequalTimeGF_long_tau( inp.in_t, inp.in_U, in_tau_start, in_tau_end, in_tau_step, inp.in_noOfSites, inp.in_noOfUp, inp.in_noOfDn, in_NUM_EIGEN_VALUES_DN, sector, inp.method, inp.commit_number, inp.need_profiling );
     
     expected_file_names = {};
     list_of_taus = in_tau_start:in_tau_step:in_tau_end;
