@@ -203,6 +203,7 @@ end
 time=toc
     
 for i_f = 1:length(output_files)
+    tau = list_of_taus(i_f);
     save(output_files{i_f},'-append','noOfSites','noOfUp','noOfDn','U','tau','t','time', 'NUM_OF_EIGEN_VALUES_UP', 'NUM_OF_EIGEN_VALUES_DN');            
 end     
 fprintf('Finish all calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
