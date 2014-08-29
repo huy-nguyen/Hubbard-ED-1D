@@ -29,6 +29,8 @@ for i_dat_files = 1:length(list_of_taus)
     disp(output_files{i_dat_files});
 end
 
+fprintf('\n')
+
 aux_file_name = strcat('aux_',num2str(noOfSites, '%02d'),...
                                     '_sites_',num2str(noOfUp, '%02d'),...
                                     'u',num2str(noOfDn, '%02d'),...
@@ -55,6 +57,8 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     clearvars groundState;
     fprintf('Done with diagonalization at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     
+%% SPIN UP:
+    
     fprintf('Begin diagonalizing spin-up of secondHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     if NUM_OF_EIGEN_VALUES >= expanded_space_size_up
         NUM_OF_EIGEN_VALUES_UP = expanded_space_size_up - 1;
@@ -74,28 +78,6 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     end     
     clearvars i_f eigenVectors_up;
     
-       
-    
-    fprintf('Begin diagonalizing spin-dn of secondHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
-    if NUM_OF_EIGEN_VALUES >= expanded_space_size_dn
-        NUM_OF_EIGEN_VALUES_DN = expanded_space_size_dn - 1;
-        fprintf('NUM_EIGEN_VALUES exceeds dimension of spin-down matrix. Now set to %d\n', NUM_OF_EIGEN_VALUES_DN)
-    else
-        NUM_OF_EIGEN_VALUES_DN = NUM_OF_EIGEN_VALUES;
-    end
-
-    [eigenVectors_dn, eigenValues_dn] = eigs( hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn + 1 ), ...
-                                            NUM_OF_EIGEN_VALUES_DN, 'sa', OPTS);
-    eigenValues_dn = diag(eigenValues_dn);
-    fprintf('Done with diagonalization at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
-    save( aux_file_name, '-append', 'eigenVectors_dn', 'eigenVectors_dn', '-mat', '-v7.3');
-    for i_f = 1:length(output_files)
-        save(output_files{i_f},'-append','eigenVectors_dn','eigenValues_dn', '-v7.3');            
-    end     
-    clearvars i_f eigenVectors_dn;
-    
-    
-%% SPIN UP:
     fprintf('Begin spin up calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     for t_tau = 1:length(output_files) % loop over taus
     
@@ -180,7 +162,25 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     clearvars t_tau;
     clearvars sizeSpacePlusOne eigenVectors_up eigenValues_up ;
     
-%% SPIN DOWN:        
+%% SPIN DOWN:    
+    fprintf('Begin diagonalizing spin-dn of secondHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
+    if NUM_OF_EIGEN_VALUES >= expanded_space_size_dn
+        NUM_OF_EIGEN_VALUES_DN = expanded_space_size_dn - 1;
+        fprintf('NUM_EIGEN_VALUES exceeds dimension of spin-down matrix. Now set to %d\n', NUM_OF_EIGEN_VALUES_DN)
+    else
+        NUM_OF_EIGEN_VALUES_DN = NUM_OF_EIGEN_VALUES;
+    end
+
+    [eigenVectors_dn, eigenValues_dn] = eigs( hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn + 1 ), ...
+                                            NUM_OF_EIGEN_VALUES_DN, 'sa', OPTS);
+    eigenValues_dn = diag(eigenValues_dn);
+    fprintf('Done with diagonalization at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
+    save( aux_file_name, '-append', 'eigenVectors_dn', 'eigenVectors_dn', '-mat', '-v7.3');
+    for i_f = 1:length(output_files)
+        save(output_files{i_f},'-append','eigenVectors_dn','eigenValues_dn', '-v7.3');            
+    end     
+    clearvars i_f eigenVectors_dn;
+    
     fprintf('Begin spin down calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     for t_tau = 1:length(output_files) % loop over taus
         
