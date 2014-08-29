@@ -1,4 +1,4 @@
-function [ output_files ] = unequalTimeGF_long_tau( t, U, tau_start, tau_end, tau_step, noOfSites, noOfUp, noOfDn, NUM_OF_EIGEN_VALUES )
+function output_files = unequalTimeGF_long_tau( t, U, tau_start, tau_end, tau_step, noOfSites, noOfUp, noOfDn, NUM_OF_EIGEN_VALUES )
 % calculate the unequal time GF by using series expansion
 
 OPTS.issym = 1;
