@@ -8,6 +8,15 @@ expanded_space_size_up = nchoosek(noOfSites,noOfUp+1)*nchoosek(noOfSites,noOfDn)
 expanded_space_size_dn = nchoosek(noOfSites,noOfUp)*nchoosek(noOfSites,noOfDn + 1);
 format compact;
 
+profile_directory_name = strcat('profile_',num2str(noOfSites, '%02d'),...
+                                    '_sites_',num2str(noOfUp, '%02d'),...
+                                    'u',num2str(noOfDn, '%02d'),...
+                                    'd_U_',num2str(U, '%4.2f'),...
+                                    '_t_',num2str(t),...
+                                    '_eigen_', num2str(NUM_OF_EIGEN_VALUES, '%04d'),...
+                                    ' ',datestr(now,'_yymmdd_HHMMSS'));
+fprintf('Profile directory: %s.\n', profile_directory_name )
+                                
 output_files = {};
 list_of_taus = tau_start:tau_step:tau_end;
 for i_filename = 1:length(list_of_taus)
@@ -40,7 +49,9 @@ aux_file_name = strcat('aux_',num2str(noOfSites, '%02d'),...
                                     '_eigen_', num2str(NUM_OF_EIGEN_VALUES, '%04d'),...
                                     ' ',datestr(now,'_yymmdd_HHMMSS'),'.mat');
                                 
+
 tic;
+profile -memory on;
 
 if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     fprintf('Begin diagonalizing firstHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
@@ -269,6 +280,8 @@ else
 end
 
 time=toc
+
+profile off;
     
 for i_f = 1:length(output_files)
     tau = list_of_taus(i_f);
@@ -276,5 +289,6 @@ for i_f = 1:length(output_files)
 end     
 fprintf('Finish all calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
 
+profsave(profile('info'), profile_directory_name);
 
 end
