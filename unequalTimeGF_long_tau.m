@@ -42,7 +42,13 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     % with this line to save memory:
     [groundState,groundStateEnergy]=eigs( hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn ),...
                                                1,'sa'); %ASSUMING THAT THE HAMILTONIAN IS REAL SYMMETRIC
-    save(savedFileName,'groundState','groundStateEnergy'); %save variables...    
+                                           
+    save(savedFileName,'groundState','groundStateEnergy'); %save variables...     
+    for i_f = 1:length(output_files)
+        save(output_files{i_f},'groundState','groundStateEnergy');            
+    end     
+    clearvars i_f;
+    
     fprintf('\nData file: %s\n', savedFileName)
     
        
@@ -58,7 +64,12 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     [eigenVectors_up, eigenValues_up] = eigs( hubbardHamiltonian( t, U, noOfSites, noOfUp+1, noOfDn ), ...
                                             NUM_OF_EIGEN_VALUES_UP, 'sa', OPTS);
     eigenValues_up = diag(eigenValues_up);
-    save(savedFileName,'-append','eigenValues_up','eigenVectors_up');
+    
+    save(savedFileName,'-append','eigenValues_up','eigenVectors_up');       
+    for i_f = 1:length(output_files)
+        save(output_files{i_f},'-append','eigenValues_up','eigenVectors_up');            
+    end     
+    clearvars i_f;
     
     for t_tau = 1:length(output_files) % loop over taus
         
@@ -112,8 +123,10 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         end
 
         clearvars diagonal_elem_up;
-        save(output_files{t_tau}, 'spinUpGreenFunction');
+        save(output_files{t_tau}, '-append', 'spinUpGreenFunction');
+        clearvars spinUpGreenFunction;
     end
+    clearvars t_tau;
     clearvars sizeSpacePlusOne eigenVectors_up eigenValues_up ;
     
 %% SPIN DOWN:        
@@ -128,7 +141,12 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     [eigenVectors_dn, eigenValues_dn] = eigs( hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn + 1 ), ...
                                             NUM_OF_EIGEN_VALUES_DN, 'sa', OPTS);
     eigenValues_dn = diag(eigenValues_dn);
-    save(savedFileName,'-append','eigenVectors_dn','eigenValues_dn');
+    
+    save(savedFileName,'-append','eigenVectors_dn','eigenValues_dn');          
+    for i_f = 1:length(output_files)
+        save(output_files{i_f},'-append','eigenVectors_dn','eigenValues_dn');            
+    end     
+    clearvars i_f;
 
     for t_tau = 1:length(output_files) % loop over taus
         
@@ -183,7 +201,9 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
 
         clearvars diagonal_elem_dn;
         save(output_files{t_tau}, '-append', 'spinDnGreenFunction');
+        clearvars spinDnGreenFunction;
     end
+    clearvars t_tau;
     clearvars sizeSpacePlusOne eigenVectors_dn eigenValues_dn;
 
 
@@ -193,7 +213,13 @@ end
 
 time=toc
 save(savedFileName,'-append','noOfSites','noOfUp','noOfDn','U','tau','t','time', 'NUM_OF_EIGEN_VALUES_UP', 'NUM_OF_EIGEN_VALUES_DN');
-save(savedFileName, '-append','spinUpGreenFunction', 'spinDnGreenFunction');
+    
+for i_f = 1:length(output_files)
+    save(output_files{i_f},'-append','noOfSites','noOfUp','noOfDn','U','tau','t','time', 'NUM_OF_EIGEN_VALUES_UP', 'NUM_OF_EIGEN_VALUES_DN');            
+end     
+clearvars i_f;
+% save(savedFileName, '-append','spinUpGreenFunction', 'spinDnGreenFunction');
+clearvars i_f;
 disp('Saved spinUpGreenFunction, spinDnGreenFunction.');
 fprintf('Finish all calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
 
