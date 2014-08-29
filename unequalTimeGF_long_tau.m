@@ -22,15 +22,11 @@ for i_filename = 1:length(list_of_taus)
         ' ',datestr(now,'_yymmdd_HHMMSS'),'.mat');
 end
                 
-                
 tic;
 
 if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     fprintf('Begin calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
-    spinUpGreenFunction=zeros(noOfSites);
-    spinDnGreenFunction=zeros(noOfSites);
     
-    % with this line to save memory:
     [groundState,groundStateEnergy]=eigs( hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn ),...
                                                1,'sa'); %ASSUMING THAT THE HAMILTONIAN IS REAL SYMMETRIC
                                            
@@ -39,10 +35,13 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     end     
     clearvars i_f;
     
-    % NEED TO PRINT OUT DATA FILES
+    fprintf('%03d data files:\n', length(list_of_taus))
+    for i_dat_files = 1:length(list_of_taus)
+        disp(output_files{i_dat_files});
+    end
        
 %% SPIN UP:
-    fprintf('Begin spin-up calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
+    fprintf('\nBegin spin-up calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     if NUM_OF_EIGEN_VALUES >= expanded_space_size_up
         NUM_OF_EIGEN_VALUES_UP = expanded_space_size_up - 1;
         fprintf('NUM_EIGEN_VALUES exceeds dimension of spin-up matrix. Now set to %d\n', NUM_OF_EIGEN_VALUES_UP)
@@ -58,19 +57,20 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         save(output_files{i_f},'-append','eigenValues_up','eigenVectors_up');            
     end     
     clearvars i_f;
-    
+    fprintf('Done with diagonalization at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     for t_tau = 1:length(output_files) % loop over taus
-        
+    
         tau = list_of_taus(t_tau);
+        fprintf('Working on tau = %4.2f     at time %s\n', tau, datestr(now,'yymmdd_HHMMSS'))
         spinUpGreenFunction=zeros(noOfSites);
         
-        fprintf('Begin calculating off-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
+        fprintf('        Begin calculating off-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
         for i_site=1:noOfSites        
-            fprintf('Working on i = %3d     at time %s\n', i_site, datestr(now,'yymmdd_HHMMSS'))
+            fprintf('        Working on i = %3d     at time %s\n', i_site, datestr(now,'yymmdd_HHMMSS'))
             destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )'; 
             left_wave_function =  (groundState') * destructionMatrix; 
-            for j_site=(i_site+1):noOfSites % maybe consider j_site=i_site:noOfSites ?
-                fprintf('Working on j =     %3d at time %s\n', j_site, datestr(now,'yymmdd_HHMMSS'))
+            for j_site=(i_site+1):noOfSites 
+                fprintf('        Working on j =     %3d at time %s\n', j_site, datestr(now,'yymmdd_HHMMSS'))
                 right_wave_function = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'up' ) * ...
                                                     groundState;
                 k_sum = 0;
@@ -88,7 +88,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
             clearvars destructionMatrix left_wave_function;
         end
 
-        fprintf('Begin calculating on-diagonal elements at time  %s.\n', datestr(now,'yymmdd_HHMMSS'))
+        fprintf('        Begin calculating on-diagonal elements at time  %s.\n', datestr(now,'yymmdd_HHMMSS'))
         i_site = 1;
             destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
             left_wave_function =  (groundState') * destructionMatrix;    
@@ -135,18 +135,20 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     end     
     clearvars i_f;
 
+    fprintf('Done with diagonalization at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     for t_tau = 1:length(output_files) % loop over taus
         
         tau = list_of_taus(t_tau);
+        fprintf('Working on tau = %4.2f     at time %s\n', tau, datestr(now,'yymmdd_HHMMSS'))
         spinDnGreenFunction=zeros(noOfSites);    
     
-        fprintf('Begin calculating off-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
+        fprintf('        Begin calculating off-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
         for i_site=1:noOfSites 
-            fprintf('Working on i = %3d     at time %s\n', i_site, datestr(now,'yymmdd_HHMMSS'))
+            fprintf('        Working on i = %3d     at time %s\n', i_site, datestr(now,'yymmdd_HHMMSS'))
             destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'dn' )'; 
             left_wave_function =  (groundState') * destructionMatrix; 
-            for j_site=(i_site+1):noOfSites % maybe consider j_site=i_site:noOfSites ?
-                fprintf('Working on j =     %3d at time %s\n', j_site, datestr(now,'yymmdd_HHMMSS'))
+            for j_site=(i_site+1):noOfSites 
+                fprintf('        Working on j =     %3d at time %s\n', j_site, datestr(now,'yymmdd_HHMMSS'))
                 right_wave_function = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'dn' ) * ...
                                                     groundState;
                 k_sum = 0;
@@ -164,7 +166,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
             clearvars destructionMatrix left_wave_function;
         end
 
-        fprintf('Begin calculating on-diagonal elements at time  %s.\n', datestr(now,'yymmdd_HHMMSS'))
+        fprintf('    Begin calculating on-diagonal elements at time  %s.\n', datestr(now,'yymmdd_HHMMSS'))
         i_site = 1;
             destructionMatrix=creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'dn' )';
             left_wave_function =  (groundState') * destructionMatrix;    
