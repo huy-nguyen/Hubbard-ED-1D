@@ -3,21 +3,23 @@ function [ totalHamiltonian, kineticHamiltonian,  potentialHamiltonian] = hubbar
 
 [ combinedBasis, totalNoOfPossiblestates,totalNoOfUpStates, totalNoOfDnStates, upStates, dnStates ] = generateBasis( noOfSites, noOfUp, noOfDn );
 
-noOfPar=noOfUp+noOfDn;
-
-potentialHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,totalNoOfUpStates);
 kineticHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,totalNoOfUpStates);
 
-for j=1:totalNoOfPossiblestates % need to look at this again
-       upSectorDec= combinedBasis(j,2);
-       dnSectorDec=combinedBasis(j,3);
+potential_elems = zeros(totalNoOfPossiblestates, 1);
+
+extracted_up_states = combinedBasis(:,2); % for parfor
+extracted_dn_states = combinedBasis(:,3);
+for j=1:totalNoOfPossiblestates 
+       upSectorDec= extracted_up_states(j);
+       dnSectorDec=extracted_dn_states(j);
        upSector = de2bi_modified(upSectorDec, noOfSites);
        dnSector= de2bi_modified(dnSectorDec, noOfSites);       
        doubleOccupancy=bitand(upSector,dnSector); % find all doubly-occupied sites
        potentialEnergy=sum(doubleOccupancy)*U; % sum up the number of doubly occupied sites and multiply by U
-       potentialHamiltonian(j,j)=potentialEnergy;
+       potential_elems(j) = potentialEnergy;
 end
-
+potentialHamiltonian = spdiags(potential_elems, 0, totalNoOfPossiblestates, totalNoOfPossiblestates);
+clearvars potential_elems extracted_up_states extracted_dn_states;
 
 % the number of electrons to be hopped over if the electrons hop around the lattice boundary (can easily see that this must be the case):
 noOfUpInterior=noOfUp-1;
