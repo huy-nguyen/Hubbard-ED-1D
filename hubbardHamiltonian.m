@@ -1,25 +1,37 @@
 function [ totalHamiltonian, kineticHamiltonian,  potentialHamiltonian] = hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn )
-% Form the 1-D Hubbard Hamiltonian
+
 
 [ combinedBasis, totalNoOfPossiblestates,totalNoOfUpStates, totalNoOfDnStates, upStates, dnStates ] = generateBasis( noOfSites, noOfUp, noOfDn );
 
 noOfPar=noOfUp+noOfDn;
 
-kineticHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,2*noOfPar);
-totalHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,3*noOfPar);
-potentialHamiltonian = helper_hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn );
+potentialHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,totalNoOfUpStates);
+kineticHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,totalNoOfUpStates);
+totalHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,totalNoOfUpStates);
+
+for j=1:totalNoOfPossiblestates % need to look at this again
+       upSectorDec= combinedBasis(j,2);
+       dnSectorDec=combinedBasis(j,3);
+       upSector = de2bi(upSectorDec, noOfSites, 'left-msb');
+       dnSector= de2bi(dnSectorDec, noOfSites, 'left-msb');       
+       doubleOccupancy=bitand(upSector,dnSector); % find all doubly-occupied sites
+       potentialEnergy=sum(doubleOccupancy)*U; % sum up the number of doubly occupied sites and multiply by U
+       potentialHamiltonian(j,j)=potentialEnergy;
+end
 
 
 % the number of electrons to be hopped over if the electrons hop around the lattice boundary (can easily see that this must be the case):
 noOfUpInterior=noOfUp-1;
 noOfDnInterior=noOfDn-1;
 
-% site numbering: 1 2 3 4 5 ...
-% Form the kinetic Hamiltonian:
 for m=1:totalNoOfPossiblestates % go through each state in the basis:
     % save the unshifted spin up and spin down sectors:
-    upSector= combinedBasis(m,4:noOfSites+3);
-    dnSector=combinedBasis(m,noOfSites+4:end);
+    upSectorDec = combinedBasis(m, 2);
+    dnSectorDec = combinedBasis(m, 3);
+    
+    upSector= de2bi(upSectorDec, noOfSites, 'left-msb');
+    dnSector= de2bi(dnSectorDec, noOfSites, 'left-msb');      
+    
     % find the occupied lattice sites:    
     upNonZero=find(upSector);
     dnNonZero=find(dnSector);
@@ -36,7 +48,7 @@ for m=1:totalNoOfPossiblestates % go through each state in the basis:
            leftShiftResult(leftShiftedIndex)=1;
              
            % figure out where in the basis this shifted state is
-           upIndexOfLeftShiftedResult=  find(upStates(:,1)== bi2de(leftShiftResult,'left-msb') );
+           upIndexOfLeftShiftedResult=  find(upStates== bi2de(leftShiftResult,'left-msb') );
            dnIndexOfLeftShiftedResult=mod( m-1,totalNoOfDnStates)+1;
            basisIndexOfLeftShiftedResult=(upIndexOfLeftShiftedResult-1)*totalNoOfDnStates+dnIndexOfLeftShiftedResult;
            % update that state:
@@ -61,7 +73,7 @@ for m=1:totalNoOfPossiblestates % go through each state in the basis:
            rightShiftResult(rightShiftedIndex)=1;
              
            % figure out where in the basis this shifted state is
-           upIndexOfRightShiftedResult=  find(upStates(:,1)== bi2de(rightShiftResult,'left-msb') );
+           upIndexOfRightShiftedResult=  find(upStates== bi2de(rightShiftResult,'left-msb') );
            dnIndexOfRightShiftedResult=mod( m-1,totalNoOfDnStates)+1;
            basisIndexOfRightShiftedResult=(upIndexOfRightShiftedResult-1)*totalNoOfDnStates+dnIndexOfRightShiftedResult;
            % update that state:
@@ -88,7 +100,7 @@ for m=1:totalNoOfPossiblestates % go through each state in the basis:
            leftShiftResult(leftShiftedIndex)=1;
              
            % figure out where in the basis this shifted state is
-           dnIndexOfLeftShiftedResult=  find(dnStates(:,1)== bi2de(leftShiftResult,'left-msb') );
+           dnIndexOfLeftShiftedResult=  find(dnStates== bi2de(leftShiftResult,'left-msb') );
            upIndexOfLeftShiftedResult= floor(( m - 1 )/totalNoOfDnStates)+1;
            basisIndexOfLeftShiftedResult=(upIndexOfLeftShiftedResult-1)*totalNoOfDnStates+dnIndexOfLeftShiftedResult;
            
@@ -112,7 +124,7 @@ for m=1:totalNoOfPossiblestates % go through each state in the basis:
            rightShiftResult(rightShiftedIndex)=1;
            
            % figure out where in the basis this shifted state is
-           dnIndexOfRightShiftedResult=  find(dnStates(:,1)== bi2de(rightShiftResult,'left-msb') );
+           dnIndexOfRightShiftedResult=  find(dnStates== bi2de(rightShiftResult,'left-msb') );
            upIndexOfLeftShiftedResult= floor(( m - 1 )/totalNoOfDnStates)+1;
            basisIndexOfRightShiftedResult=(upIndexOfLeftShiftedResult-1)*totalNoOfDnStates+dnIndexOfRightShiftedResult;
            
@@ -134,28 +146,5 @@ end
 totalHamiltonian=kineticHamiltonian+potentialHamiltonian;
 
 
-end
-
-function [  potentialHamiltonian] = helper_hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn )
-% For compatibility:
-[ combinedBasis, totalNoOfPossiblestates,totalNoOfUpStates, totalNoOfDnStates, upStates, dnStates ] = generateBasis( noOfSites, noOfUp, noOfDn );
-combinedBasis = combinedBasis(:,1:3);
-
-% Begin computation:
-noOfPar=noOfUp+noOfDn;
-
-potentialHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,totalNoOfUpStates);
-kineticHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,2*noOfPar);
-totalHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,3*noOfPar);
-
-for j=1:totalNoOfPossiblestates % need to look at this again
-       upSectorDec= combinedBasis(j,2);
-       dnSectorDec=combinedBasis(j,3);
-       upSector = de2bi(upSectorDec, noOfSites, 'left-msb');
-       dnSector= de2bi(dnSectorDec, noOfSites, 'left-msb');       
-       doubleOccupancy=bitand(upSector,dnSector); % find all doubly-occupied sites
-       potentialEnergy=sum(doubleOccupancy)*U; % sum up the number of doubly occupied sites and multiply by U
-       potentialHamiltonian(j,j)=potentialEnergy;
-end
 
 end
