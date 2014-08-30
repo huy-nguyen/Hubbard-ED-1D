@@ -4,40 +4,37 @@ function [ operatorMatrix ] = creationOperator( NUM_SITES, NUM_UP, NUM_DN , CREA
 if ( strcmp(spin,'up')==1 && NUM_UP < NUM_SITES ) || (strcmp(spin,'dn')==1 && NUM_DN < NUM_SITES)
     
     if strcmp(spin,'up')==1
-        [ SMALL_BASIS,  TOTAL_STATES_SMALL_BASIS,dummy1,dummy2,dummy3,dummy4 ] = generateBasis( NUM_SITES, NUM_UP, NUM_DN ); % original basis
-        [ BIG_BASIS,  TOTAL_STATES_BIG_BASIS, TOTAL_UP_STATES_BIG_BASIS, TOTAL_DN_STATES_BIG_BASIS, UP_BIG_BASIS, DN_BIG_BASIS] = generateBasis( NUM_SITES, NUM_UP+1, NUM_DN ); %basis for space with one more particle
+        [ SMALL_BASIS, TOTAL_STATES_SMALL_BASIS,dummy1,dummy2,dummy3,dummy4 ] = generateBasis( NUM_SITES, NUM_UP, NUM_DN ); % original basis
+        [ BIG_BASIS, TOTAL_STATES_BIG_BASIS,TOTAL_UP_STATES_BIG_BASIS, TOTAL_DN_STATES_BIG_BASIS, UP_BIG_BASIS, DN_BIG_BASIS ] = generateBasis( NUM_SITES, NUM_UP + 1, NUM_DN ); %basis for space with one more particle
     elseif strcmp(spin,'dn')==1
-        [ SMALL_BASIS,  TOTAL_STATES_SMALL_BASIS,dummy1,dummy2,dummy3,dummy4 ] = generateBasis( NUM_SITES, NUM_UP, NUM_DN ); % original basis
-        [ BIG_BASIS,  TOTAL_STATES_BIG_BASIS, TOTAL_UP_STATES_BIG_BASIS, TOTAL_DN_STATES_BIG_BASIS, UP_BIG_BASIS, DN_BIG_BASIS] = generateBasis( NUM_SITES, NUM_UP, NUM_DN+1 ); %basis for space with one more particle
+        [ SMALL_BASIS, TOTAL_STATES_SMALL_BASIS,dummy1,dummy2,dummy3,dummy4 ] = generateBasis( NUM_SITES, NUM_UP, NUM_DN );
+        [ BIG_BASIS, TOTAL_STATES_BIG_BASIS,TOTAL_UP_STATES_BIG_BASIS, TOTAL_DN_STATES_BIG_BASIS, UP_BIG_BASIS, DN_BIG_BASIS ] = generateBasis( NUM_SITES, NUM_UP, NUM_DN + 1 );
     else
         disp('Error');
     end
     
     if strcmp(spin,'up')==1
         %the indices to extract the correct up/down state from the combined basis table
-        START_INDEX=4;
-        STOP_INDEX=NUM_SITES+3;
-        START_INDEX_OTHER_SECTOR=3+NUM_SITES+1;
-        STOP_INDEX_OTHER_SECTOR=3+NUM_SITES*2;
+        START_INDEX = 2;
+        START_INDEX_OTHER_SECTOR = 3;
         NUM_PRECEDING_ELECTRONS=0; % number of electrons the creation operator has to commute through to act on the up sector (zero since the spin up sector is to the left of the spin down sector)
     elseif strcmp(spin,'dn')
-        START_INDEX=3+NUM_SITES+1;
-        STOP_INDEX=3+NUM_SITES*2;
-        START_INDEX_OTHER_SECTOR=4;
-        STOP_INDEX_OTHER_SECTOR=NUM_SITES+3;
+        START_INDEX = 3;
+        START_INDEX_OTHER_SECTOR = 2;
         NUM_PRECEDING_ELECTRONS=NUM_UP; % since the creation operator has to commute through all the up electrons in order to act on the spin down sector
     else
         disp('Error');
     end
     
     % create the non-square matrix that will house the operator
-%     operatorMatrix=zeros(TOTAL_STATES_BIG_BASIS, TOTAL_STATES_SMALL_BASIS);
     operatorMatrix=spalloc(TOTAL_STATES_BIG_BASIS, TOTAL_STATES_SMALL_BASIS,TOTAL_STATES_BIG_BASIS);
     
     for basisCounter=1:TOTAL_STATES_SMALL_BASIS %loop through all the columns of the operator matrix
         %apply the operator to the small basis
-        currentState=SMALL_BASIS(basisCounter,START_INDEX:STOP_INDEX); % the sector taht will be acted on
-        otherSector=SMALL_BASIS(basisCounter,START_INDEX_OTHER_SECTOR:STOP_INDEX_OTHER_SECTOR); % the sector that is not affected
+        currentStateDec = SMALL_BASIS(basisCounter, START_INDEX);
+        otherSector = SMALL_BASIS(basisCounter, START_INDEX_OTHER_SECTOR);
+        currentState= de2bi(currentStateDec, NUM_SITES, 'left-msb');
+        otherSector= de2bi(otherSector, NUM_SITES, 'left-msb'); 
         
         if currentState(CREATION_INDEX)==0 % only need to act if that site is unoccupied
             resultantState=currentState;
@@ -53,11 +50,11 @@ if ( strcmp(spin,'up')==1 && NUM_UP < NUM_SITES ) || (strcmp(spin,'dn')==1 && NU
             
             %then look up the resulting state in the big basis
             if strcmp(spin,'up')==1
-                upIndexOfResultantState=  find(UP_BIG_BASIS(:,1)== bi2de(resultantState,'left-msb') );
-                dnIndexOfResultantState=find(DN_BIG_BASIS(:,1)== bi2de(otherSector,'left-msb') );
+                upIndexOfResultantState=  find(UP_BIG_BASIS== bi2de(resultantState,'left-msb') );
+                dnIndexOfResultantState=find(DN_BIG_BASIS== bi2de(otherSector,'left-msb') );
             else
-                dnIndexOfResultantState=  find(DN_BIG_BASIS(:,1)== bi2de(resultantState,'left-msb') );
-                upIndexOfResultantState= find(UP_BIG_BASIS(:,1)== bi2de(otherSector,'left-msb') );
+                dnIndexOfResultantState=  find(DN_BIG_BASIS== bi2de(resultantState,'left-msb') );
+                upIndexOfResultantState= find(UP_BIG_BASIS== bi2de(otherSector,'left-msb') );
                 
             end
             
@@ -70,10 +67,6 @@ if ( strcmp(spin,'up')==1 && NUM_UP < NUM_SITES ) || (strcmp(spin,'dn')==1 && NU
     end
 
 else
-    %disp('Error: application of creation when # electrons = # sites');
-    [ SMALL_BASIS,  TOTAL_STATES_SMALL_BASIS,dummy1,dummy2,dummy3,dummy4 ] = generateBasis( NUM_SITES, NUM_UP, NUM_DN ); % original basis   
-    %operatorMatrix=zeros(1,TOTAL_STATES_SMALL_BASIS);
-    %operatorMatrix=NaN;
     error('Error: cannot apply creation operator when number of electrons = number of sites');
 end
 end
