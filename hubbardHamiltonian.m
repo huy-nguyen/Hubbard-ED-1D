@@ -49,7 +49,7 @@ for m=1:totalNoOfPossiblestates % go through each state in the basis:
            leftShiftResult(leftShiftedIndex)=1;
              
            % figure out where in the basis this shifted state is
-           upIndexOfLeftShiftedResult=  find(upStates== bi2de(leftShiftResult,'left-msb') );
+           upIndexOfLeftShiftedResult=  find(upStates== bi2de_modified(leftShiftResult) );
            dnIndexOfLeftShiftedResult=mod( m-1,totalNoOfDnStates)+1;
            basisIndexOfLeftShiftedResult=(upIndexOfLeftShiftedResult-1)*totalNoOfDnStates+dnIndexOfLeftShiftedResult;
            % update that state:
@@ -74,7 +74,7 @@ for m=1:totalNoOfPossiblestates % go through each state in the basis:
            rightShiftResult(rightShiftedIndex)=1;
              
            % figure out where in the basis this shifted state is
-           upIndexOfRightShiftedResult=  find(upStates== bi2de(rightShiftResult,'left-msb') );
+           upIndexOfRightShiftedResult=  find(upStates== bi2de_modified(rightShiftResult) );
            dnIndexOfRightShiftedResult=mod( m-1,totalNoOfDnStates)+1;
            basisIndexOfRightShiftedResult=(upIndexOfRightShiftedResult-1)*totalNoOfDnStates+dnIndexOfRightShiftedResult;
            % update that state:
@@ -101,7 +101,7 @@ for m=1:totalNoOfPossiblestates % go through each state in the basis:
            leftShiftResult(leftShiftedIndex)=1;
              
            % figure out where in the basis this shifted state is
-           dnIndexOfLeftShiftedResult=  find(dnStates== bi2de(leftShiftResult,'left-msb') );
+           dnIndexOfLeftShiftedResult=  find(dnStates== bi2de_modified(leftShiftResult) );
            upIndexOfLeftShiftedResult= floor(( m - 1 )/totalNoOfDnStates)+1;
            basisIndexOfLeftShiftedResult=(upIndexOfLeftShiftedResult-1)*totalNoOfDnStates+dnIndexOfLeftShiftedResult;
            
@@ -125,7 +125,7 @@ for m=1:totalNoOfPossiblestates % go through each state in the basis:
            rightShiftResult(rightShiftedIndex)=1;
            
            % figure out where in the basis this shifted state is
-           dnIndexOfRightShiftedResult=  find(dnStates== bi2de(rightShiftResult,'left-msb') );
+           dnIndexOfRightShiftedResult=  find(dnStates== bi2de_modified(rightShiftResult) );
            upIndexOfLeftShiftedResult= floor(( m - 1 )/totalNoOfDnStates)+1;
            basisIndexOfRightShiftedResult=(upIndexOfLeftShiftedResult-1)*totalNoOfDnStates+dnIndexOfRightShiftedResult;
            
