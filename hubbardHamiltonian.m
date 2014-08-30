@@ -7,7 +7,6 @@ noOfPar=noOfUp+noOfDn;
 
 potentialHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,totalNoOfUpStates);
 kineticHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,totalNoOfUpStates);
-totalHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,totalNoOfUpStates);
 
 for j=1:totalNoOfPossiblestates % need to look at this again
        upSectorDec= combinedBasis(j,2);
