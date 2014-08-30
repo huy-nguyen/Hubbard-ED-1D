@@ -23,7 +23,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     spinDnGreenFunction=zeros(noOfSites);
     
     
-    save(savedFileName,'eigenVectors','eigenValues','totalHamiltonian'); %save variables...    
+    save(savedFileName,'eigenVectors','eigenValues','totalHamiltonian', '-v7.3'); %save variables...    
     disp('Saved eigenVectors, eigenValues, totalHamiltonian'); % for debugging
 
     clearvars totalHamiltonian eigenVectors eigenValues; %...before clearing them to save memory
@@ -40,6 +40,10 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     clearvars secondHamiltonian;
 
     eigenValues=diag(eigenValues);
+    up_struct.eigenVectors_up = eigenVectors;
+    up_struct.eigenValues_up = eigenValues;
+    save(savedFileName, '-append', '-struct', 'up_struct', '-v7.3');
+    
     middle_matrix = diag(exp((groundStateEnergy - eigenValues)*tau));
     
     for i=1:noOfSites
@@ -80,6 +84,9 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     clearvars secondHamiltonian;
 
     eigenValues=diag(eigenValues);
+    dn_struct.eigenVectors_dn = eigenVectors;
+    dn_struct.eigenValues_dn = eigenValues;
+    save(savedFileName, '-append', '-struct', 'dn_struct', '-v7.3');
     middle_matrix = diag(exp((groundStateEnergy - eigenValues)*tau));
     
     for i=1:noOfSites
@@ -115,10 +122,10 @@ else
 end
 
 time=toc
-save(savedFileName,'-append','noOfSites','noOfUp','noOfDn','U','tau','t','time');
+save(savedFileName,'-append','noOfSites','noOfUp','noOfDn','U','tau','t','time', '-v7.3');
 disp('saved noOfSites, noOfUp, noOfDn, U, tau, t, time');
 
-save(savedFileName, '-append','spinUpGreenFunction', 'spinDnGreenFunction');
+save(savedFileName, '-append','spinUpGreenFunction', 'spinDnGreenFunction', '-v7.3');
 disp('saved spinUpGreenFunction, spinDnGreenFunction');
 
 

@@ -26,7 +26,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
 %     clearvars totalHamiltonian eigenVectors eigenValues; %...before clearing them to save memory
     
     % with these lines:
-    save(savedFileName,'groundState','groundStateEnergy'); %save variables...    
+    save(savedFileName,'groundState','groundStateEnergy', '-v7.3'); %save variables...    
     disp('Saved groundState groundStateEnergy'); % for debugging
        
 %% SPIN UP:
@@ -113,10 +113,10 @@ else
 end
 
 time=toc
-save(savedFileName,'-append','noOfSites','noOfUp','noOfDn','U','tau','t','time');
+save(savedFileName,'-append','noOfSites','noOfUp','noOfDn','U','tau','t','time','-v7.3');
 disp('saved noOfSites, noOfUp, noOfDn, U, tau, t, time');
 
-save(savedFileName, '-append','spinUpGreenFunction', 'spinDnGreenFunction');
+save(savedFileName, '-append','spinUpGreenFunction', 'spinDnGreenFunction', '-v7.3');
 disp('saved spinUpGreenFunction, spinDnGreenFunction');
 
 
