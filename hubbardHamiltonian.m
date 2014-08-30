@@ -3,7 +3,12 @@ function [ totalHamiltonian, kineticHamiltonian,  potentialHamiltonian] = hubbar
 
 [ combinedBasis, totalNoOfPossiblestates,totalNoOfUpStates, totalNoOfDnStates, upStates, dnStates ] = generateBasis( noOfSites, noOfUp, noOfDn );
 
-kineticHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,totalNoOfUpStates);
+max_kinetic_num_non_zero_elems = 2*(noOfSites - noOfUp - 2) + 2*(noOfSites - noOfDn - 2);
+KINETIC_COUNTER = 0;
+kinetic_rows = zeros(max_kinetic_num_non_zero_elems, 1);
+kinetic_cols = zeros(max_kinetic_num_non_zero_elems, 1);
+kinetic_elems = zeros(max_kinetic_num_non_zero_elems, 1);
+
 
 potential_elems = zeros(totalNoOfPossiblestates, 1);
 
@@ -24,6 +29,8 @@ clearvars potential_elems extracted_up_states extracted_dn_states;
 % the number of electrons to be hopped over if the electrons hop around the lattice boundary (can easily see that this must be the case):
 noOfUpInterior=noOfUp-1;
 noOfDnInterior=noOfDn-1;
+
+
 
 for m=1:totalNoOfPossiblestates % go through each state in the basis:
     % save the unshifted spin up and spin down sectors:
@@ -54,12 +61,22 @@ for m=1:totalNoOfPossiblestates % go through each state in the basis:
            basisIndexOfLeftShiftedResult=(upIndexOfLeftShiftedResult-1)*totalNoOfDnStates+dnIndexOfLeftShiftedResult;
            % update that state:
            if leftShiftedIndex < n % if the electron does not hop around the boundary
-               kineticHamiltonian(basisIndexOfLeftShiftedResult,m)= kineticHamiltonian(basisIndexOfLeftShiftedResult,m) - t;
+               KINETIC_COUNTER = KINETIC_COUNTER + 1;
+               kinetic_rows(KINETIC_COUNTER) = basisIndexOfLeftShiftedResult;
+               kinetic_cols(KINETIC_COUNTER) = m;
+               kinetic_elems(KINETIC_COUNTER) = -t;
+               
            else % if the electron does hop around the boundary               
                if mod(noOfUpInterior,2)== 0 % if the number of electrons to be hopped over is even
-                   kineticHamiltonian(basisIndexOfLeftShiftedResult,m)= kineticHamiltonian(basisIndexOfLeftShiftedResult,m) - t;
+                   KINETIC_COUNTER = KINETIC_COUNTER + 1;
+                   kinetic_rows(KINETIC_COUNTER) = basisIndexOfLeftShiftedResult;
+                   kinetic_cols(KINETIC_COUNTER) = m;
+                   kinetic_elems(KINETIC_COUNTER) = -t;
                else
-                   kineticHamiltonian(basisIndexOfLeftShiftedResult,m)= kineticHamiltonian(basisIndexOfLeftShiftedResult,m) + t;
+                   KINETIC_COUNTER = KINETIC_COUNTER + 1;
+                   kinetic_rows(KINETIC_COUNTER) = basisIndexOfLeftShiftedResult;
+                   kinetic_cols(KINETIC_COUNTER) = m;
+                   kinetic_elems(KINETIC_COUNTER) = +t;
                end
            end
        end
@@ -79,12 +96,21 @@ for m=1:totalNoOfPossiblestates % go through each state in the basis:
            basisIndexOfRightShiftedResult=(upIndexOfRightShiftedResult-1)*totalNoOfDnStates+dnIndexOfRightShiftedResult;
            % update that state:
            if rightShiftedIndex > n
-               kineticHamiltonian(basisIndexOfRightShiftedResult,m)= kineticHamiltonian(basisIndexOfRightShiftedResult,m) - t;
+               KINETIC_COUNTER = KINETIC_COUNTER + 1;
+               kinetic_rows(KINETIC_COUNTER) = basisIndexOfRightShiftedResult;
+               kinetic_cols(KINETIC_COUNTER) = m;
+               kinetic_elems(KINETIC_COUNTER) = -t;
            else
                if mod(noOfUpInterior,2)== 0 
-                   kineticHamiltonian(basisIndexOfRightShiftedResult,m)= kineticHamiltonian(basisIndexOfRightShiftedResult,m) - t;
+                   KINETIC_COUNTER = KINETIC_COUNTER + 1;
+                   kinetic_rows(KINETIC_COUNTER) = basisIndexOfRightShiftedResult;
+                   kinetic_cols(KINETIC_COUNTER) = m;
+                   kinetic_elems(KINETIC_COUNTER) = -t;
                else
-                   kineticHamiltonian(basisIndexOfRightShiftedResult,m)= kineticHamiltonian(basisIndexOfRightShiftedResult,m) + t;
+                   KINETIC_COUNTER = KINETIC_COUNTER + 1;
+                   kinetic_rows(KINETIC_COUNTER) = basisIndexOfRightShiftedResult;
+                   kinetic_cols(KINETIC_COUNTER) = m;
+                   kinetic_elems(KINETIC_COUNTER) = +t;
                end
            end
        end
@@ -106,12 +132,21 @@ for m=1:totalNoOfPossiblestates % go through each state in the basis:
            basisIndexOfLeftShiftedResult=(upIndexOfLeftShiftedResult-1)*totalNoOfDnStates+dnIndexOfLeftShiftedResult;
            
            if leftShiftedIndex < p % if the electron does not hop around the boundary
-               kineticHamiltonian(basisIndexOfLeftShiftedResult,m)= kineticHamiltonian(basisIndexOfLeftShiftedResult,m) - t;
+               KINETIC_COUNTER = KINETIC_COUNTER + 1;
+               kinetic_rows(KINETIC_COUNTER) = basisIndexOfLeftShiftedResult;
+               kinetic_cols(KINETIC_COUNTER) = m;
+               kinetic_elems(KINETIC_COUNTER) = -t;
            else % if the electron does hop around the boundary               
                if mod(noOfDnInterior,2)== 0 % if that number is even
-                   kineticHamiltonian(basisIndexOfLeftShiftedResult,m)= kineticHamiltonian(basisIndexOfLeftShiftedResult,m) - t;
+                   KINETIC_COUNTER = KINETIC_COUNTER + 1;
+                   kinetic_rows(KINETIC_COUNTER) = basisIndexOfLeftShiftedResult;
+                   kinetic_cols(KINETIC_COUNTER) = m;
+                   kinetic_elems(KINETIC_COUNTER) = -t;
                else
-                   kineticHamiltonian(basisIndexOfLeftShiftedResult,m)= kineticHamiltonian(basisIndexOfLeftShiftedResult,m) + t;
+                   KINETIC_COUNTER = KINETIC_COUNTER + 1;
+                   kinetic_rows(KINETIC_COUNTER) = basisIndexOfLeftShiftedResult;
+                   kinetic_cols(KINETIC_COUNTER) = m;
+                   kinetic_elems(KINETIC_COUNTER) = +t;
                end
            end             
        end
@@ -130,12 +165,22 @@ for m=1:totalNoOfPossiblestates % go through each state in the basis:
            basisIndexOfRightShiftedResult=(upIndexOfLeftShiftedResult-1)*totalNoOfDnStates+dnIndexOfRightShiftedResult;
            
            if rightShiftedIndex > p % if the electron does not hop around the boundary
-               kineticHamiltonian(basisIndexOfRightShiftedResult,m)= kineticHamiltonian(basisIndexOfRightShiftedResult,m) - t;
+               KINETIC_COUNTER = KINETIC_COUNTER + 1;
+               kinetic_rows(KINETIC_COUNTER) = basisIndexOfRightShiftedResult;
+               kinetic_cols(KINETIC_COUNTER) = m;
+               kinetic_elems(KINETIC_COUNTER) = -t;
            else % if the electron does hop around the boundary               
                if mod(noOfDnInterior,2)== 0 % if that number is even
-                   kineticHamiltonian(basisIndexOfRightShiftedResult,m)= kineticHamiltonian(basisIndexOfRightShiftedResult,m) - t;
+                   KINETIC_COUNTER = KINETIC_COUNTER + 1;
+                   kinetic_rows(KINETIC_COUNTER) = basisIndexOfRightShiftedResult;
+                   kinetic_cols(KINETIC_COUNTER) = m;
+                   kinetic_elems(KINETIC_COUNTER) = -t;
                else
-                   kineticHamiltonian(basisIndexOfRightShiftedResult,m)= kineticHamiltonian(basisIndexOfRightShiftedResult,m) + t;
+                   KINETIC_COUNTER = KINETIC_COUNTER + 1;
+                   kinetic_rows(KINETIC_COUNTER) = basisIndexOfRightShiftedResult;
+                   kinetic_cols(KINETIC_COUNTER) = m;
+                   kinetic_elems(KINETIC_COUNTER) = +t;
+                   
                end
            end
            
@@ -143,6 +188,12 @@ for m=1:totalNoOfPossiblestates % go through each state in the basis:
     end
     
 end
+
+kinetic_rows = kinetic_rows( kinetic_rows ~= 0);
+kinetic_cols = kinetic_cols( 1:length(kinetic_rows));
+kinetic_elems = kinetic_elems( 1:length(kinetic_rows));
+
+kineticHamiltonian = sparse( kinetic_rows, kinetic_cols, kinetic_elems, totalNoOfPossiblestates, totalNoOfPossiblestates);
 
 totalHamiltonian=kineticHamiltonian+potentialHamiltonian;
 
