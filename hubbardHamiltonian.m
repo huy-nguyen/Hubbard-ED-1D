@@ -5,21 +5,10 @@ function [ totalHamiltonian, kineticHamiltonian,  potentialHamiltonian] = hubbar
 
 noOfPar=noOfUp+noOfDn;
 
-
-potentialHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,noOfPar);
 kineticHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,2*noOfPar);
 totalHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,3*noOfPar);
+potentialHamiltonian = helper_hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn );
 
-% Form the potential Hamiltonian:
-for j=1:totalNoOfPossiblestates % need to look at this again
-%    for j=1:totalNoOfPossiblestates
-       upSector= combinedBasis(j,4:noOfSites+3);
-       dnSector=combinedBasis(j,noOfSites+4:end);
-       doubleOccupancy=bitand(upSector,dnSector); % find all doubly-occupied sites
-       potentialEnergy=sum(doubleOccupancy)*U; % sum up the number of doubly occupied sites and multiply by U
-       potentialHamiltonian(j,j)=potentialEnergy;
-%    end
-end
 
 % the number of electrons to be hopped over if the electrons hop around the lattice boundary (can easily see that this must be the case):
 noOfUpInterior=noOfUp-1;
@@ -147,3 +136,26 @@ totalHamiltonian=kineticHamiltonian+potentialHamiltonian;
 
 end
 
+function [  potentialHamiltonian] = helper_hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn )
+% For compatibility:
+[ combinedBasis, totalNoOfPossiblestates,totalNoOfUpStates, totalNoOfDnStates, upStates, dnStates ] = generateBasis( noOfSites, noOfUp, noOfDn );
+combinedBasis = combinedBasis(:,1:3);
+
+% Begin computation:
+noOfPar=noOfUp+noOfDn;
+
+potentialHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,totalNoOfUpStates);
+kineticHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,2*noOfPar);
+totalHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,3*noOfPar);
+
+for j=1:totalNoOfPossiblestates % need to look at this again
+       upSectorDec= combinedBasis(j,2);
+       dnSectorDec=combinedBasis(j,3);
+       upSector = de2bi(upSectorDec, noOfSites, 'left-msb');
+       dnSector= de2bi(dnSectorDec, noOfSites, 'left-msb');       
+       doubleOccupancy=bitand(upSector,dnSector); % find all doubly-occupied sites
+       potentialEnergy=sum(doubleOccupancy)*U; % sum up the number of doubly occupied sites and multiply by U
+       potentialHamiltonian(j,j)=potentialEnergy;
+end
+
+end
