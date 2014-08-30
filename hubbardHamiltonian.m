@@ -12,8 +12,8 @@ totalHamiltonian=spalloc(totalNoOfPossiblestates,totalNoOfPossiblestates,totalNo
 for j=1:totalNoOfPossiblestates % need to look at this again
        upSectorDec= combinedBasis(j,2);
        dnSectorDec=combinedBasis(j,3);
-       upSector = de2bi(upSectorDec, noOfSites, 'left-msb');
-       dnSector= de2bi(dnSectorDec, noOfSites, 'left-msb');       
+       upSector = de2bi_modified(upSectorDec, noOfSites);
+       dnSector= de2bi_modified(dnSectorDec, noOfSites);       
        doubleOccupancy=bitand(upSector,dnSector); % find all doubly-occupied sites
        potentialEnergy=sum(doubleOccupancy)*U; % sum up the number of doubly occupied sites and multiply by U
        potentialHamiltonian(j,j)=potentialEnergy;
@@ -29,8 +29,8 @@ for m=1:totalNoOfPossiblestates % go through each state in the basis:
     upSectorDec = combinedBasis(m, 2);
     dnSectorDec = combinedBasis(m, 3);
     
-    upSector= de2bi(upSectorDec, noOfSites, 'left-msb');
-    dnSector= de2bi(dnSectorDec, noOfSites, 'left-msb');      
+    upSector= de2bi_modified(upSectorDec, noOfSites);
+    dnSector= de2bi_modified(dnSectorDec, noOfSites);      
     
     % find the occupied lattice sites:    
     upNonZero=find(upSector);

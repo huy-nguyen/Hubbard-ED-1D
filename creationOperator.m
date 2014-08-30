@@ -33,8 +33,8 @@ if ( strcmp(spin,'up')==1 && NUM_UP < NUM_SITES ) || (strcmp(spin,'dn')==1 && NU
         %apply the operator to the small basis
         currentStateDec = SMALL_BASIS(basisCounter, START_INDEX);
         otherSector = SMALL_BASIS(basisCounter, START_INDEX_OTHER_SECTOR);
-        currentState= de2bi(currentStateDec, NUM_SITES, 'left-msb');
-        otherSector= de2bi(otherSector, NUM_SITES, 'left-msb'); 
+        currentState= de2bi_modified(currentStateDec, NUM_SITES);
+        otherSector= de2bi_modified(otherSector, NUM_SITES); 
         
         if currentState(CREATION_INDEX)==0 % only need to act if that site is unoccupied
             resultantState=currentState;
