@@ -25,9 +25,12 @@ if ( strcmp(spin,'up')==1 && NUM_UP < NUM_SITES ) || (strcmp(spin,'dn')==1 && NU
     else
         disp('Error');
     end
-    
-    % create the non-square matrix that will house the operator
-    operatorMatrix=spalloc(TOTAL_STATES_BIG_BASIS, TOTAL_STATES_SMALL_BASIS,TOTAL_STATES_BIG_BASIS);
+        
+    max_num_non_zero_elems = TOTAL_STATES_SMALL_BASIS;
+    COUNTER = 0;
+    output_rows = zeros(max_num_non_zero_elems, 1);
+    output_cols = zeros(max_num_non_zero_elems, 1);
+    output_elems = zeros(max_num_non_zero_elems, 1);
     
     for basisCounter=1:TOTAL_STATES_SMALL_BASIS %loop through all the columns of the operator matrix
         %apply the operator to the small basis
@@ -60,12 +63,19 @@ if ( strcmp(spin,'up')==1 && NUM_UP < NUM_SITES ) || (strcmp(spin,'dn')==1 && NU
             
             basisIndexOfResultantState=(upIndexOfResultantState-1)*TOTAL_DN_STATES_BIG_BASIS+dnIndexOfResultantState;
             
-            operatorMatrix(basisIndexOfResultantState,basisCounter)=coefficient;
-            
+            COUNTER = COUNTER + 1;
+            output_rows(COUNTER) = basisIndexOfResultantState;
+            output_cols(COUNTER) = basisCounter;
+            output_elems(COUNTER) = coefficient;
         end
         
     end
 
+    output_rows = output_rows( output_rows ~= 0);
+    output_cols = output_cols( 1:length(output_rows));
+    output_elems = output_elems( 1:length(output_rows));
+    
+    operatorMatrix = sparse( output_rows, output_cols, output_elems, TOTAL_STATES_BIG_BASIS, TOTAL_STATES_SMALL_BASIS);
 else
     error('Error: cannot apply creation operator when number of electrons = number of sites');
 end
