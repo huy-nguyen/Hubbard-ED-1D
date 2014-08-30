@@ -1,8 +1,6 @@
 *.mat
 *.zip
-*.out
 *.bak
-*.o[0-9][0-9][0-9]*
 *.log
 ED_PC.m
 *.asv
