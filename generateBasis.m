@@ -3,39 +3,13 @@ function [ combinedBasis, TOTAL_ALL_STATES,TOTAL_UP_STATES, TOTAL_DN_STATES, upS
 %   Detailed explanation goes here
 
 if (NUM_UP <= NUM_SITES) && (NUM_DN <= NUM_SITES)
-% form the basis:
-TOTAL_UP_STATES=nchoosek(NUM_SITES,NUM_UP);
-TOTAL_DN_STATES=nchoosek(NUM_SITES,NUM_DN);
-TOTAL_ALL_STATES=TOTAL_UP_STATES*TOTAL_DN_STATES;
 
-tempUp=zeros(1,NUM_SITES);
-tempUp(1:NUM_UP)=ones(1,NUM_UP);
-upStates=zeros(TOTAL_UP_STATES,NUM_SITES+1);
-upStates(:,2:NUM_SITES+1)=unique(perms(tempUp),'rows'); % state represented as a binary number
-upStates(:,1)=bi2de(upStates(:,2:NUM_SITES+1),'left-msb'); % first column stores the decimal equivalent of the binary state
-upStates=sortrows(upStates);
+[ TOTAL_ALL_STATES,TOTAL_UP_STATES, TOTAL_DN_STATES, temp_combinedBasis, temp_upStates, temp_dnStates, upStates, dnStates ] = helper_generateBasis( NUM_SITES, NUM_UP, NUM_DN );
 
-
-tempDn=zeros(1,NUM_SITES);
-tempDn(1:NUM_DN)=ones(1,NUM_DN);
-dnStates=zeros(TOTAL_DN_STATES,NUM_SITES+1);
-dnStates(:,2:NUM_SITES+1)=unique(perms(tempDn),'rows');
-dnStates(:,1)=bi2de(dnStates(:,2:NUM_SITES+1),'left-msb');
-dnStates=sortrows(dnStates);
-
-combinedBasis=zeros(TOTAL_ALL_STATES,3+NUM_SITES*2);
-
-for i =1:TOTAL_ALL_STATES    
-    dnIndex=mod( i-1,TOTAL_DN_STATES)+1;
-    upIndex=floor((i-1)/TOTAL_DN_STATES)+1;
-    
-    combinedBasis(i,1)=i;
-    combinedBasis(i,2)=upStates(upIndex,1);
-    combinedBasis(i,3)=dnStates(dnIndex,1);
-    
-    combinedBasis(i,4:NUM_SITES+3)=upStates(upIndex,2:end);
-    combinedBasis(i,NUM_SITES+4:end)=dnStates(dnIndex,2:end);       
-end
+% for compatibility:
+upup = de2bi(temp_combinedBasis(:,2), 'left-msb');
+dndn = de2bi(temp_combinedBasis(:,3), 'left-msb');
+combinedBasis = horzcat( temp_combinedBasis(:,1), temp_combinedBasis(:,2),temp_combinedBasis(:,3), upup, dndn);
 
 else
    error('Error: number of states greater than number of sites.'); 
@@ -43,3 +17,31 @@ end
 
 end
 
+function [ TOTAL_ALL_STATES,TOTAL_UP_STATES, TOTAL_DN_STATES, combinedBasis, upStates, dnStates, upupStates, dndnStates ] = helper_generateBasis( NUM_SITES, NUM_UP, NUM_DN )
+% remove some of the output arguments after testing
+
+TOTAL_UP_STATES=nchoosek(NUM_SITES,NUM_UP);
+TOTAL_DN_STATES=nchoosek(NUM_SITES,NUM_DN);
+TOTAL_ALL_STATES=TOTAL_UP_STATES*TOTAL_DN_STATES;
+
+
+v_up = (dec2bin(0:(2^NUM_SITES)-1)=='1');
+u_up =v_up(sum(v_up,2)==NUM_UP,:);
+upStates(:,1) =  bin2dec(num2str(u_up));
+% for compatibility:
+upupStates = zeros( TOTAL_UP_STATES, 1 + NUM_SITES);
+upupStates(:,1) =  bin2dec(num2str(u_up));
+upupStates(:,2:end) = u_up;
+
+v_dn = (dec2bin(0:(2^NUM_SITES)-1)=='1');
+u_dn =v_dn(sum(v_dn,2)==NUM_DN,:);
+dnStates(:,1) =  bin2dec(num2str(u_dn));
+% for compatiblity:
+dndnStates = zeros( TOTAL_DN_STATES, 1 + NUM_SITES);
+dndnStates(:,1) =  bin2dec(num2str(u_dn));
+dndnStates(:,2:end) = u_dn;
+
+combinedBasis = repmat(dnStates, TOTAL_UP_STATES, 3);
+combinedBasis(:,2) = reshape(repmat(upStates', TOTAL_DN_STATES, 1), TOTAL_ALL_STATES, []);
+combinedBasis(:,1) = 1:TOTAL_ALL_STATES;
+end
