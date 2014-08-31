@@ -53,11 +53,11 @@ if ( strcmp(spin,'up')==1 && NUM_UP < NUM_SITES ) || (strcmp(spin,'dn')==1 && NU
             
             %then look up the resulting state in the big basis
             if strcmp(spin,'up')==1
-                upIndexOfResultantState=  find(UP_BIG_BASIS== bi2de_modified(resultantState) );
-                dnIndexOfResultantState=find(DN_BIG_BASIS== bi2de_modified(otherSector) );
+                upIndexOfResultantState=  binaraysearchasc(UP_BIG_BASIS, bi2de_modified(resultantState) );
+                dnIndexOfResultantState= binaraysearchasc(DN_BIG_BASIS, bi2de_modified(otherSector) );
             else
-                dnIndexOfResultantState=  find(DN_BIG_BASIS== bi2de_modified(resultantState) );
-                upIndexOfResultantState= find(UP_BIG_BASIS== bi2de_modified(otherSector) );
+                dnIndexOfResultantState=  binaraysearchasc(DN_BIG_BASIS, bi2de_modified(resultantState) );
+                upIndexOfResultantState= binaraysearchasc(UP_BIG_BASIS, bi2de_modified(otherSector) );
                 
             end
             
