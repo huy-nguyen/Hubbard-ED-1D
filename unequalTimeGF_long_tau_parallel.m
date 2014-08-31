@@ -60,7 +60,8 @@ end
 
 if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     fprintf('Begin diagonalizing firstHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
-    [groundState,groundStateEnergy]=eigs( hubbardHamiltonian_parallel( t, U, noOfSites, noOfUp, noOfDn ),...
+    firstHamiltonian = hubbardHamiltonian_parallel( t, U, noOfSites, noOfUp, noOfDn );
+    [groundState,groundStateEnergy]=eigs( firstHamiltonian,...
                                                1,'sa'); %ASSUMING THAT THE HAMILTONIAN IS REAL SYMMETRIC
                                            
     save( aux_file_name, 'groundState', 'groundStateEnergy', '-mat', '-v7.3');
@@ -70,7 +71,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         save(output_files{i_f},'groundState','groundStateEnergy', '-v7.3');            
     end     
     clearvars i_f;
-    clearvars groundState;
+    clearvars groundState firstHamiltonian;
     fprintf('Done with diagonalization at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     
 %% SPIN UP:
@@ -82,8 +83,8 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         else
             NUM_OF_EIGEN_VALUES_UP = NUM_OF_EIGEN_VALUES;
         end
-
-        [eigenVectors_up, eigenValues_up] = eigs( hubbardHamiltonian_parallel( t, U, noOfSites, noOfUp+1, noOfDn ), ...
+        secondHamiltonianUp = hubbardHamiltonian_parallel( t, U, noOfSites, noOfUp+1, noOfDn );
+        [eigenVectors_up, eigenValues_up] = eigs( secondHamiltonianUp, ...
                                                 NUM_OF_EIGEN_VALUES_UP, 'sa', OPTS);
         eigenValues_up = diag(eigenValues_up);
         fprintf('Done with diagonalization at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
@@ -92,7 +93,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         for i_f = 1:length(output_files)
             save(output_files{i_f},'-append','eigenValues_up','eigenVectors_up', '-v7.3');            
         end     
-        clearvars i_f eigenVectors_up;
+        clearvars i_f eigenVectors_up secondHamiltonianUp;
 
         fprintf('Begin spin up calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
         for t_tau = 1:length(output_files) % loop over taus
@@ -104,16 +105,18 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
             fprintf('        Begin calculating off-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
             for i_site=1:noOfSites        
                 fprintf('        Working on i = %3d     at time %s\n', i_site, datestr(now,'yymmdd_HHMMSS'))
+                destructionMatrixUp = creationOperator_parallel( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
                 left_wave_function = (aux_file.groundState') * ...
-                                                            creationOperator_parallel( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
+                                                            destructionMatrixUp;
                 save( aux_file_name, '-append', 'left_wave_function', '-mat', '-v7.3');
-                clearvars left_wave_function;
+                clearvars left_wave_function destructionMatrixUp;
                 for j_site=(i_site+1):noOfSites 
                     fprintf('        Working on j =     %3d at time %s\n', j_site, datestr(now,'yymmdd_HHMMSS'))
-                    right_wave_function = creationOperator_parallel( noOfSites, noOfUp, noOfDn , j_site, 'up' ) * ...
+                    creationMatrixUp = creationOperator_parallel( noOfSites, noOfUp, noOfDn , j_site, 'up' );
+                    right_wave_function =  creationMatrixUp * ...
                                                         aux_file.groundState;
                     save( aux_file_name,'-append',  'right_wave_function', '-mat', '-v7.3');
-                    clearvars right_wave_function;
+                    clearvars right_wave_function creationMatrixUp;
 
                     k_sum = 0;
                     for k_eigenValues = 1:NUM_OF_EIGEN_VALUES_UP %sum over k
@@ -140,15 +143,17 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
 
             fprintf('        Begin calculating on-diagonal elements at time  %s.\n', datestr(now,'yymmdd_HHMMSS'))
             i_site = 1;
+                destructionMatrixUp = creationOperator_parallel( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
                 left_wave_function = (aux_file.groundState') * ...
-                                                        creationOperator_parallel( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
+                                                            destructionMatrixUp;
                 save( aux_file_name,'-append',  'left_wave_function', '-mat', '-v7.3');
                 clearvars left_wave_function;   
                 j_site = 1;  
-                    right_wave_function = creationOperator_parallel( noOfSites, noOfUp, noOfDn , j_site, 'up' ) * ...
-                        aux_file.groundState;
+                    creationMatrixUp = creationOperator_parallel( noOfSites, noOfUp, noOfDn , j_site, 'up' );
+                    right_wave_function =  creationMatrixUp * ...
+                                                        aux_file.groundState;
                     save( aux_file_name, '-append', 'right_wave_function', '-mat', '-v7.3');
-                    clearvars right_wave_function;
+                    clearvars right_wave_function creationMatrixUp;
                     k_sum = 0;
                     for k_eigenValues = 1:NUM_OF_EIGEN_VALUES_UP %sum over k
                         expo_factor = exp( tau*( groundStateEnergy - eigenValues_up(k_eigenValues)));
@@ -190,8 +195,8 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         else
             NUM_OF_EIGEN_VALUES_DN = NUM_OF_EIGEN_VALUES;
         end
-
-        [eigenVectors_dn, eigenValues_dn] = eigs( hubbardHamiltonian_parallel( t, U, noOfSites, noOfUp, noOfDn + 1 ), ...
+        secondHamiltonianDn = hubbardHamiltonian_parallel( t, U, noOfSites, noOfUp, noOfDn + 1 );
+        [eigenVectors_dn, eigenValues_dn] = eigs( secondHamiltonianDn, ...
                                                 NUM_OF_EIGEN_VALUES_DN, 'sa', OPTS);
         eigenValues_dn = diag(eigenValues_dn);
         fprintf('Done with diagonalization at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
@@ -199,7 +204,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         for i_f = 1:length(output_files)
             save(output_files{i_f},'-append','eigenVectors_dn','eigenValues_dn', '-v7.3');            
         end     
-        clearvars i_f eigenVectors_dn;
+        clearvars i_f eigenVectors_dn secondHamiltonianDn;
 
         fprintf('Begin spin down calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
         for t_tau = 1:length(output_files) % loop over taus
@@ -211,14 +216,16 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
             fprintf('        Begin calculating off-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
             for i_site=1:noOfSites 
                 fprintf('        Working on i = %3d     at time %s\n', i_site, datestr(now,'yymmdd_HHMMSS'))
+                destructionMatrixDn = creationOperator_parallel( noOfSites, noOfUp, noOfDn , i_site, 'dn' )';
                 left_wave_function = (aux_file.groundState') * ...
-                                                      creationOperator_parallel( noOfSites, noOfUp, noOfDn , i_site, 'dn' )';
+                                                      destructionMatrixDn;
                 save( aux_file_name, '-append', 'left_wave_function', '-mat', '-v7.3');
                 clearvars left_wave_function;
 
                 for j_site=(i_site+1):noOfSites 
                     fprintf('        Working on j =     %3d at time %s\n', j_site, datestr(now,'yymmdd_HHMMSS'))
-                    right_wave_function = creationOperator_parallel( noOfSites, noOfUp, noOfDn , j_site, 'dn' ) * ...
+                    creationMatrixDn = creationOperator_parallel( noOfSites, noOfUp, noOfDn , j_site, 'dn' );
+                    right_wave_function = creationMatrixDn * ...
                                                         aux_file.groundState;
                     save( aux_file_name,'-append',  'right_wave_function', '-mat', '-v7.3');
                     clearvars right_wave_function;
@@ -246,12 +253,14 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
 
             fprintf('        Begin calculating on-diagonal elements at time  %s.\n', datestr(now,'yymmdd_HHMMSS'))
             i_site = 1;
+                destructionMatrixDn = creationOperator_parallel( noOfSites, noOfUp, noOfDn , i_site, 'dn' )';
                 left_wave_function = (aux_file.groundState') * ...
-                                                    creationOperator_parallel( noOfSites, noOfUp, noOfDn , i_site, 'dn' )';
+                                                      destructionMatrixDn;
                 save( aux_file_name,'-append',  'left_wave_function', '-mat', '-v7.3');
                 clearvars left_wave_function;      
-                j_site = 1;  
-                    right_wave_function = creationOperator_parallel( noOfSites, noOfUp, noOfDn , j_site, 'dn' ) * ...
+                j_site = 1; 
+                    creationMatrixDn = creationOperator_parallel( noOfSites, noOfUp, noOfDn , j_site, 'dn' );
+                    right_wave_function = creationMatrixDn * ...
                         aux_file.groundState;
                     save( aux_file_name, '-append', 'right_wave_function', '-mat', '-v7.3');
                     clearvars right_wave_function;
