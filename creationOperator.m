@@ -15,12 +15,12 @@ if ( strcmp(spin,'up')==1 && NUM_UP < NUM_SITES ) || (strcmp(spin,'dn')==1 && NU
     
     if strcmp(spin,'up')==1
         %the indices to extract the correct up/down state from the combined basis table
-        START_INDEX = 2;
-        START_INDEX_OTHER_SECTOR = 3;
+        INDEX_AFFECTED_SECTOR = 2;
+        INDEX_OTHER_SECTOR = 3;
         NUM_PRECEDING_ELECTRONS=0; % number of electrons the creation operator has to commute through to act on the up sector (zero since the spin up sector is to the left of the spin down sector)
     elseif strcmp(spin,'dn')
-        START_INDEX = 3;
-        START_INDEX_OTHER_SECTOR = 2;
+        INDEX_AFFECTED_SECTOR = 3;
+        INDEX_OTHER_SECTOR = 2;
         NUM_PRECEDING_ELECTRONS=NUM_UP; % since the creation operator has to commute through all the up electrons in order to act on the spin down sector
     else
         disp('Error');
@@ -34,10 +34,10 @@ if ( strcmp(spin,'up')==1 && NUM_UP < NUM_SITES ) || (strcmp(spin,'dn')==1 && NU
     
     for basisCounter=1:TOTAL_STATES_SMALL_BASIS %loop through all the columns of the operator matrix
         %apply the operator to the small basis
-        currentStateDec = SMALL_BASIS(basisCounter, START_INDEX);
-        otherSector = SMALL_BASIS(basisCounter, START_INDEX_OTHER_SECTOR);
+        currentStateDec = SMALL_BASIS(basisCounter, INDEX_AFFECTED_SECTOR);
+        otherSectorDec = SMALL_BASIS(basisCounter, INDEX_OTHER_SECTOR);
         currentState= de2bi_modified(currentStateDec, NUM_SITES);
-        otherSector= de2bi_modified(otherSector, NUM_SITES); 
+        otherSector= de2bi_modified(otherSectorDec, NUM_SITES); 
         
         if currentState(CREATION_INDEX)==0 % only need to act if that site is unoccupied
             resultantState=currentState;
