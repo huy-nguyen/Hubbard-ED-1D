@@ -6,7 +6,7 @@ potential_elems = zeros(totalNoOfPossiblestates, 1);
 
 extracted_up_states = combinedBasis(:,2); % for parfor
 extracted_dn_states = combinedBasis(:,3);
-parfor j=1:totalNoOfPossiblestates 
+for j=1:totalNoOfPossiblestates 
        upSectorDec= extracted_up_states(j);
        dnSectorDec=extracted_dn_states(j);
        upSector = de2bi_modified(upSectorDec, noOfSites);
@@ -27,7 +27,7 @@ max_kinetic_num_non_zero_per_iteration = 2*max(1, (noOfSites - noOfUp - 2)) + 2*
 
 upSector_sliced = combinedBasis(:,2);
 dnSector_sliced = combinedBasis(:,3);
-parfor m=1:totalNoOfPossiblestates % go through each state in the basis:
+for m=1:totalNoOfPossiblestates % go through each state in the basis:
     
     KINETIC_COUNTER = 0;
     kinetic_rows_iterations = zeros(max_kinetic_num_non_zero_per_iteration, 1);
