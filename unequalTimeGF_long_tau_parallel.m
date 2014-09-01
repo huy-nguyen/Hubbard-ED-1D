@@ -51,7 +51,7 @@ end
 
 if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     fprintf('Begin diagonalizing firstHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
-    firstHamiltonian = hubbardHamiltonian_parallel( t, U, noOfSites, noOfUp, noOfDn );
+    firstHamiltonian = hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn );
     [groundState,groundStateEnergy]=eigs( firstHamiltonian,...
                                                1,'sa'); %ASSUMING THAT THE HAMILTONIAN IS REAL SYMMETRIC
                                               
@@ -71,7 +71,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         else
             NUM_OF_EIGEN_VALUES_UP = NUM_OF_EIGEN_VALUES;
         end
-        secondHamiltonianUp = hubbardHamiltonian_parallel( t, U, noOfSites, noOfUp+1, noOfDn );
+        secondHamiltonianUp = hubbardHamiltonian( t, U, noOfSites, noOfUp+1, noOfDn );
         [eigenVectors_up, eigenValues_up] = eigs( secondHamiltonianUp, ...
                                                 NUM_OF_EIGEN_VALUES_UP, 'sa', OPTS);
         eigenValues_up = diag(eigenValues_up);
@@ -92,13 +92,13 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
             fprintf('        Begin calculating off-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
             for i_site=1:noOfSites        
                 fprintf('        Working on i = %3d     at time %s\n', i_site, datestr(now,'yymmdd_HHMMSS'))
-                destructionMatrixUp = creationOperator_parallel( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
+                destructionMatrixUp = creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
                 left_wave_function = (groundState') * ...
                                                             destructionMatrixUp;
                 clearvars destructionMatrixUp;
                 for j_site=(i_site+1):noOfSites 
                     fprintf('        Working on j =     %3d at time %s\n', j_site, datestr(now,'yymmdd_HHMMSS'))
-                    creationMatrixUp = creationOperator_parallel( noOfSites, noOfUp, noOfDn , j_site, 'up' );
+                    creationMatrixUp = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'up' );
                     right_wave_function =  creationMatrixUp * ...
                                                         groundState;
                     clearvars creationMatrixUp;
@@ -120,12 +120,12 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
 
             fprintf('        Begin calculating on-diagonal elements at time  %s.\n', datestr(now,'yymmdd_HHMMSS'))
             i_site = 1;
-                destructionMatrixUp = creationOperator_parallel( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
+                destructionMatrixUp = creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
                 left_wave_function = (groundState') * ...
                                                             destructionMatrixUp;
                 clearvars destructionMatrixUp;
                 j_site = 1;  
-                    creationMatrixUp = creationOperator_parallel( noOfSites, noOfUp, noOfDn , j_site, 'up' );
+                    creationMatrixUp = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'up' );
                     right_wave_function =  creationMatrixUp * ...
                                                         groundState;
                     clearvars creationMatrixUp;
@@ -163,7 +163,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         else
             NUM_OF_EIGEN_VALUES_DN = NUM_OF_EIGEN_VALUES;
         end
-        secondHamiltonianDn = hubbardHamiltonian_parallel( t, U, noOfSites, noOfUp, noOfDn + 1 );
+        secondHamiltonianDn = hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn + 1 );
         [eigenVectors_dn, eigenValues_dn] = eigs( secondHamiltonianDn, ...
                                                 NUM_OF_EIGEN_VALUES_DN, 'sa', OPTS);
         eigenValues_dn = diag(eigenValues_dn);
@@ -183,13 +183,13 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
             fprintf('        Begin calculating off-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
             for i_site=1:noOfSites 
                 fprintf('        Working on i = %3d     at time %s\n', i_site, datestr(now,'yymmdd_HHMMSS'))
-                destructionMatrixDn = creationOperator_parallel( noOfSites, noOfUp, noOfDn , i_site, 'dn' )';
+                destructionMatrixDn = creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'dn' )';
                 left_wave_function = (groundState') * ...
                                                       destructionMatrixDn;
                 clearvars destructionMatrixDn;
                 for j_site=(i_site+1):noOfSites 
                     fprintf('        Working on j =     %3d at time %s\n', j_site, datestr(now,'yymmdd_HHMMSS'))
-                    creationMatrixDn = creationOperator_parallel( noOfSites, noOfUp, noOfDn , j_site, 'dn' );
+                    creationMatrixDn = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'dn' );
                     right_wave_function = creationMatrixDn * ...
                                                         groundState;
                     clearvars creationMatrixDn;
@@ -210,12 +210,12 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
 
             fprintf('        Begin calculating on-diagonal elements at time  %s.\n', datestr(now,'yymmdd_HHMMSS'))
             i_site = 1;
-                destructionMatrixDn = creationOperator_parallel( noOfSites, noOfUp, noOfDn , i_site, 'dn' )';
+                destructionMatrixDn = creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'dn' )';
                 left_wave_function = (groundState') * ...
                                                       destructionMatrixDn;
                 clearvars destructionMatrixDn;
                 j_site = 1; 
-                    creationMatrixDn = creationOperator_parallel( noOfSites, noOfUp, noOfDn , j_site, 'dn' );
+                    creationMatrixDn = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'dn' );
                     right_wave_function = creationMatrixDn * ...
                         groundState;
                     k_sum = 0;
