@@ -1,4 +1,4 @@
-function [ totalHamiltonian, kineticHamiltonian,  potentialHamiltonian] = hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn )
+function [ totalHamiltonian, kineticHamiltonian,  potentialHamiltonian] = hubbardHamiltonian_parallel( t, U, noOfSites, noOfUp, noOfDn )
 
 [ combinedBasis, totalNoOfPossiblestates,totalNoOfUpStates, totalNoOfDnStates, upStates, dnStates ] = generateBasis( noOfSites, noOfUp, noOfDn );
 
