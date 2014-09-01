@@ -1,4 +1,4 @@
-function output_files = unequalTimeGF_long_tau_parallel( t, U, tau_start, tau_end, tau_step, noOfSites, noOfUp, noOfDn, NUM_OF_EIGEN_VALUES, sector, method, commit_number, need_profiling )
+function output_files = unequalTimeGF_long_tau_parallel( t, U, tau_start, tau_end, tau_step, noOfSites, noOfUp, noOfDn, NUM_OF_EIGEN_VALUES, sector, method, commit_number, need_profiling, NUM_CORES )
 % calculate the unequal time GF by using series expansion
 
 OPTS.issym = 1;
@@ -61,7 +61,7 @@ end
 
 if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     fprintf('Generating firstHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
-    firstHamiltonian = hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn );
+    firstHamiltonian = hubbardHamiltonian_parallel_improved( t, U, noOfSites, noOfUp, noOfDn, NUM_CORES );
     fprintf('Begin diagonalizing firstHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     [groundState,groundStateEnergy]=eigs( firstHamiltonian,...
                                                1,'sa'); %ASSUMING THAT THE HAMILTONIAN IS REAL SYMMETRIC
@@ -84,7 +84,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
             NUM_OF_EIGEN_VALUES_UP = NUM_OF_EIGEN_VALUES;
         end
         fprintf('Generating spin-up secondHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
-        secondHamiltonianUp = hubbardHamiltonian( t, U, noOfSites, noOfUp+1, noOfDn );
+        secondHamiltonianUp = hubbardHamiltonian_parallel_improved( t, U, noOfSites, noOfUp+1, noOfDn, NUM_CORES );
         fprintf('Begin diagonalizing spin-up of secondHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
         [eigenVectors_up, eigenValues_up] = eigs( secondHamiltonianUp, ...
                                                 NUM_OF_EIGEN_VALUES_UP, 'sa', OPTS);
@@ -158,7 +158,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
             NUM_OF_EIGEN_VALUES_DN = NUM_OF_EIGEN_VALUES;
         end
         fprintf('Generating spin-down secondHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
-        secondHamiltonianDn = hubbardHamiltonian( t, U, noOfSites, noOfUp, noOfDn + 1 );
+        secondHamiltonianDn = hubbardHamiltonian_parallel_improved( t, U, noOfSites, noOfUp, noOfDn + 1, NUM_CORES );
         fprintf('Begin diagonalizing spin-down of secondHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
         [eigenVectors_dn, eigenValues_dn] = eigs( secondHamiltonianDn, ...
                                                 NUM_OF_EIGEN_VALUES_DN, 'sa', OPTS);
