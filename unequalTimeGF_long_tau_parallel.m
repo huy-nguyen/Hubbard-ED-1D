@@ -101,17 +101,16 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
                 creationMatrixUp = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'up' );
                 right_wave_function =  creationMatrixUp * ...
                                                     groundState;
-                clearvars creationMatrixUp;
-                i_sum_times_j_sum = zeros(1, NUM_OF_EIGEN_VALUES_UP);
-                for k_eigenValues = 1:NUM_OF_EIGEN_VALUES_UP                                    
-                    i_total = left_wave_function * eigenVectors_up(:,k_eigenValues);
-                    j_total = dot( right_wave_function, conj(eigenVectors_up(:,k_eigenValues)) );
-                    i_sum_times_j_sum(k_eigenValues) = i_total * j_total;                    
-                end  
-                for t_tau = 1:length(output_files)
-                    tau = list_of_taus(t_tau);
-                    expo_factor = exp( tau*( groundStateEnergy - eigenValues_up));
-                    spinUpGreenFunctionCellArray{t_tau}(i_site, j_site) = dot( expo_factor, i_sum_times_j_sum);
+                clearvars creationMatrixUp;  
+                i_sum = sum(bsxfun(@times, left_wave_function', eigenVectors_up));
+                j_sum = sum(bsxfun(@times, right_wave_function, eigenVectors_up));
+                i_sum_times_j_sum = i_sum.*j_sum;
+                aaa = tau_start:tau_step:tau_end;
+                bbb = groundStateEnergy - eigenValues_up;
+                expo_factor = exp( bbb * aaa)';
+                ress = sum(bsxfun(@times, i_sum_times_j_sum,expo_factor), 2);
+                for i_f = 1:length(output_files)
+                    spinUpGreenFunctionCellArray{i_f}(i_site, j_site) = ress(i_f);
                 end
                 clearvars right_wave_function
             end
@@ -129,16 +128,16 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
                 right_wave_function =  creationMatrixUp * ...
                                                     groundState;
                 clearvars creationMatrixUp;                
-                i_sum_times_j_sum = zeros(1, NUM_OF_EIGEN_VALUES_UP);
-                for k_eigenValues = 1:NUM_OF_EIGEN_VALUES_UP                                    
-                    i_total = left_wave_function * eigenVectors_up(:,k_eigenValues);
-                    j_total = dot( right_wave_function, conj(eigenVectors_up(:,k_eigenValues)) );
-                    i_sum_times_j_sum(k_eigenValues) = i_total * j_total;                    
-                end  
-                for t_tau = 1:length(output_files)
-                    tau = list_of_taus(t_tau);
-                    expo_factor = exp( tau*( groundStateEnergy - eigenValues_up));
-                    spinUpGreenFunctionCellArray{t_tau}(i_site, j_site) = dot( expo_factor, i_sum_times_j_sum);
+                
+                i_sum = sum(bsxfun(@times, left_wave_function', eigenVectors_up));
+                j_sum = sum(bsxfun(@times, right_wave_function, eigenVectors_up));
+                i_sum_times_j_sum = i_sum.*j_sum;
+                aaa = tau_start:tau_step:tau_end;
+                bbb = groundStateEnergy - eigenValues_up;
+                expo_factor = exp( bbb * aaa)';
+                ress = sum(bsxfun(@times, i_sum_times_j_sum,expo_factor), 2);
+                for i_f = 1:length(output_files)
+                    spinUpGreenFunctionCellArray{i_f}(i_site, j_site) = ress(i_f);
                 end
                 
         for t_tau = 1:length(output_files)
