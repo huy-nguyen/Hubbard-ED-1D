@@ -62,8 +62,13 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     clearvars firstHamiltonian;
     fprintf('Done with diagonalization at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     
-%% SPIN UP:
+%% SPIN UP:    
     if strcmp( sector, 'up' ) || strcmp( sector, 'both' )
+        
+        spinUpGreenFunctionCellArray = cell(1, length(output_files) );
+        for i = 1:length(output_files)
+            spinUpGreenFunctionCellArray{i} = zeros(noOfSites);
+        end
         fprintf('Begin diagonalizing spin-up of secondHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
         if NUM_OF_EIGEN_VALUES >= expanded_space_size_up
             NUM_OF_EIGEN_VALUES_UP = expanded_space_size_up - 1;
@@ -83,76 +88,68 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         clearvars i_f secondHamiltonianUp;
 
         fprintf('Begin spin up calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
-        for t_tau = 1:length(output_files) % loop over taus
-
-            tau = list_of_taus(t_tau);
-            fprintf('Working on tau = %4.2f     at time %s\n', tau, datestr(now,'yymmdd_HHMMSS'))
-            spinUpGreenFunction=zeros(noOfSites);
-
-            fprintf('        Begin calculating off-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
-            for i_site=1:noOfSites        
-                fprintf('        Working on i = %3d     at time %s\n', i_site, datestr(now,'yymmdd_HHMMSS'))
-                destructionMatrixUp = creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
-                left_wave_function = (groundState') * ...
-                                                            destructionMatrixUp;
-                clearvars destructionMatrixUp;
-                for j_site=(i_site+1):noOfSites 
-                    fprintf('        Working on j =     %3d at time %s\n', j_site, datestr(now,'yymmdd_HHMMSS'))
-                    creationMatrixUp = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'up' );
-                    right_wave_function =  creationMatrixUp * ...
-                                                        groundState;
-                    clearvars creationMatrixUp;
-
-                    k_sum = 0;
-                    for k_eigenValues = 1:NUM_OF_EIGEN_VALUES_UP %sum over k
-                        expo_factor = exp( tau*( groundStateEnergy - eigenValues_up(k_eigenValues)));                
-                        i_total = left_wave_function * eigenVectors_up(:,k_eigenValues);
-                        j_total = dot( right_wave_function, conj(eigenVectors_up(:,k_eigenValues)) );
-                        k_sum = k_sum + expo_factor * i_total * j_total;
-
-                        clearvars expo_factor i_total j_total;
-                    end
-                    spinUpGreenFunction(i_site,j_site) = k_sum;
-                    clearvars right_wave_function k_sum;
+        
+        fprintf('        Begin calculating off-diagonal elements at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
+        for i_site=1:noOfSites        
+            fprintf('        Working on i = %3d     at time %s\n', i_site, datestr(now,'yymmdd_HHMMSS'))
+            destructionMatrixUp = creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
+            left_wave_function = (groundState') * ...
+                                                        destructionMatrixUp;
+            clearvars destructionMatrixUp;
+            for j_site=(i_site+1):noOfSites 
+                fprintf('        Working on j =     %3d at time %s\n', j_site, datestr(now,'yymmdd_HHMMSS'))
+                creationMatrixUp = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'up' );
+                right_wave_function =  creationMatrixUp * ...
+                                                    groundState;
+                clearvars creationMatrixUp;
+                i_sum_times_j_sum = zeros(1, NUM_OF_EIGEN_VALUES_UP);
+                for k_eigenValues = 1:NUM_OF_EIGEN_VALUES_UP                                    
+                    i_total = left_wave_function * eigenVectors_up(:,k_eigenValues);
+                    j_total = dot( right_wave_function, conj(eigenVectors_up(:,k_eigenValues)) );
+                    i_sum_times_j_sum(k_eigenValues) = i_total * j_total;                    
+                end  
+                for t_tau = 1:length(output_files)
+                    tau = list_of_taus(t_tau);
+                    expo_factor = exp( tau*( groundStateEnergy - eigenValues_up));
+                    spinUpGreenFunctionCellArray{t_tau}(i_site, j_site) = dot( expo_factor, i_sum_times_j_sum);
                 end
-                clearvars destructionMatrix left_wave_function;
+                clearvars right_wave_function
             end
+            clearvars left_wave_function;
+        end
 
-            fprintf('        Begin calculating on-diagonal elements at time  %s.\n', datestr(now,'yymmdd_HHMMSS'))
-            i_site = 1;
-                destructionMatrixUp = creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
-                left_wave_function = (groundState') * ...
-                                                            destructionMatrixUp;
-                clearvars destructionMatrixUp;
-                j_site = 1;  
-                    creationMatrixUp = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'up' );
-                    right_wave_function =  creationMatrixUp * ...
-                                                        groundState;
-                    clearvars creationMatrixUp;
-                    k_sum = 0;
-                    for k_eigenValues = 1:NUM_OF_EIGEN_VALUES_UP %sum over k
-                        expo_factor = exp( tau*( groundStateEnergy - eigenValues_up(k_eigenValues)));
-                        i_total = left_wave_function * eigenVectors_up(:,k_eigenValues);
-                        j_total = dot( right_wave_function, conj(eigenVectors_up(:,k_eigenValues)) );
-                        k_sum = k_sum + expo_factor * i_total * j_total;        
-                        clearvars expo_factor i_total j_total;
-                    end
-                    diagonal_elem_up = k_sum;
-            clearvars left_wave_function right_wave_function k_sum;
+        fprintf('        Begin calculating on-diagonal elements at time  %s.\n', datestr(now,'yymmdd_HHMMSS'))
+        i_site = 1;
+            destructionMatrixUp = creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
+            left_wave_function = (groundState') * ...
+                                                        destructionMatrixUp;
+            clearvars destructionMatrixUp;        
+            j_site = 1;
+                creationMatrixUp = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'up' );
+                right_wave_function =  creationMatrixUp * ...
+                                                    groundState;
+                clearvars creationMatrixUp;                
+                i_sum_times_j_sum = zeros(1, NUM_OF_EIGEN_VALUES_UP);
+                for k_eigenValues = 1:NUM_OF_EIGEN_VALUES_UP                                    
+                    i_total = left_wave_function * eigenVectors_up(:,k_eigenValues);
+                    j_total = dot( right_wave_function, conj(eigenVectors_up(:,k_eigenValues)) );
+                    i_sum_times_j_sum(k_eigenValues) = i_total * j_total;                    
+                end  
+                for t_tau = 1:length(output_files)
+                    tau = list_of_taus(t_tau);
+                    expo_factor = exp( tau*( groundStateEnergy - eigenValues_up));
+                    spinUpGreenFunctionCellArray{t_tau}(i_site, j_site) = dot( expo_factor, i_sum_times_j_sum);
+                end
+                
+        for t_tau = 1:length(output_files)
+            spinUpGreenFunction = spinUpGreenFunctionCellArray{t_tau};    
+            element_at_1_1 = spinUpGreenFunction(1, 1);
             spinUpGreenFunction = spinUpGreenFunction + spinUpGreenFunction';
             for i_diag = 1:noOfSites
-                spinUpGreenFunction(i_diag, i_diag) = diagonal_elem_up;
+                spinUpGreenFunction(i_diag, i_diag) = element_at_1_1;
             end
-
-            clearvars diagonal_elem_up;
-            save(output_files{t_tau}, '-append', 'spinUpGreenFunction', '-v7.3');
-            clearvars spinUpGreenFunction;
-        end
-        clearvars t_tau;
-        clearvars sizeSpacePlusOne eigenVectors_up eigenValues_up ;
-        for i_f = 1:length(output_files)
-            save(output_files{i_f},'-append', 'NUM_OF_EIGEN_VALUES_UP', '-v7.3');
-        end
+            save(output_files{t_tau},'-append', 'spinUpGreenFunction', 'NUM_OF_EIGEN_VALUES_UP', '-v7.3');
+        end                
     end
 %% SPIN DOWN:    
     if strcmp( sector, 'dn' ) || strcmp( sector, 'both' )
