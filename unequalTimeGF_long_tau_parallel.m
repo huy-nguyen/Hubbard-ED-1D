@@ -15,6 +15,16 @@ profile_directory_name = strcat('profile_',num2str(noOfSites, '%02d'),...
                                     '_t_',num2str(t),...
                                     '_eigen_', num2str(NUM_OF_EIGEN_VALUES, '%04d'),...
                                     ' ',datestr(now,'_yymmdd_HHMMSS'));
+                                
+aux_file_name = strcat('aux_',num2str(noOfSites, '%02d'),...
+                                        '_sites_',num2str(noOfUp, '%02d'),...
+                                        'u',num2str(noOfDn, '%02d'),...
+                                        'd_U_',num2str(U, '%4.2f'),...
+                                        '_tau_',num2str(tau_start, '%4.2f'),...
+                                        '_t_',num2str(t),...
+                                        '_eigen_', num2str(NUM_OF_EIGEN_VALUES, '%04d'),...
+                                        ' ',datestr(now,'_yymmdd_HHMMSS'),'.mat');
+                                
 if strcmp( need_profiling, 'Yes' )
     fprintf('Profile directory: %s.\n', profile_directory_name )
 end
@@ -64,14 +74,18 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     firstHamiltonian = hubbardHamiltonian_parallel_improved( t, U, noOfSites, noOfUp, noOfDn, NUM_CORES );
     fprintf('Begin diagonalizing firstHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
     [groundState,groundStateEnergy]=eigs( firstHamiltonian,...
-                                               1,'sa'); %ASSUMING THAT THE HAMILTONIAN IS REAL SYMMETRIC
-    fprintf('Done with diagonalization at time %s.\n', datestr(now,'yymmdd_HHMMSS'))                                          
+                                               1,'sa'); %ASSUMING THAT THE HAMILTONIAN IS REAL SYMMETRIC    
+    save(aux_file_name, 'groundState', '-mat', '-v7.3'); 
+    aux_file_object = matfile(aux_file_name);
+    
+    fprintf('Done with diagonalization at time %s.\n', datestr(now,'yymmdd_HHMMSS'))                    
+    
     for i_f = 1:length(output_files)
         save(output_files{i_f},'groundState','groundStateEnergy', 'firstHamiltonian', '-v7.3');            
     end     
     clearvars i_f;
-    clearvars firstHamiltonian;
-    
+    clearvars firstHamiltonian groundState;
+%     first_Hamiltonian_wrapper = WorkerObjWrapper( @load_first_Hamiltonian_ground_state, aux_file_name);
     
 %% SPIN UP:    
     if strcmp( sector, 'up' ) || strcmp( sector, 'both' )
@@ -90,25 +104,34 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
                                                 NUM_OF_EIGEN_VALUES_UP, 'sa', OPTS);
         eigenValues_up = diag(eigenValues_up);
         fprintf('Done with diagonalization at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
-
+        save(aux_file_name, '-append', 'eigenVectors_up', '-mat', '-v7.3'); 
         for i_f = 1:length(output_files)
             save(output_files{i_f},'-append','eigenValues_up','eigenVectors_up', 'secondHamiltonianUp', '-v7.3');            
         end     
-        clearvars i_f secondHamiltonianUp;
+        clearvars i_f secondHamiltonianUp eigenVectors_up;
 
         fprintf('Begin spin-up Greens function calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))    
         fprintf('Number of workers in pool: %d\n', matlabpool('size'))
         up_gf_temp = zeros( length(list_of_taus) + 2, 1 );        
         parfor i_parfor = 1:length(indices_to_be_evaluated)
+%             groundState_inside_parfor = first_Hamiltonian_wrapper.Value;
+            fprintf('    Worker %2d: Begin.\n', i_parfor)
+            
+            groundState_inside_parfor = aux_file_object.groundState;
+            fprintf('    Worker %2d: Loaded ground state from %s.\n', i_parfor, aux_file_name)
+            
+            eigenVectors_up_inside_parfor = aux_file_object.eigenVectors_up;
+            fprintf('    Worker %2d: Loaded eigenVector_up from %s.\n', i_parfor, aux_file_name)
+            
             linear_index = indices_to_be_evaluated(i_parfor);
             i_site = mod( linear_index - 1,noOfSites)+1; % "row"
             j_site = floor(( linear_index - 1 )/noOfSites)+1; % "column"
             destructionMatrixUp = creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
-            left_wave_function = (groundState') * destructionMatrixUp;
+            left_wave_function = (groundState_inside_parfor') * destructionMatrixUp;
             creationMatrixUp = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'up' );
-            right_wave_function =  creationMatrixUp * groundState;
-            i_sum = sum(bsxfun(@times, left_wave_function', eigenVectors_up));
-            j_sum = sum(bsxfun(@times, right_wave_function, eigenVectors_up));
+            right_wave_function =  creationMatrixUp * groundState_inside_parfor;
+            i_sum = sum(bsxfun(@times, left_wave_function', eigenVectors_up_inside_parfor));
+            j_sum = sum(bsxfun(@times, right_wave_function, eigenVectors_up_inside_parfor));
             i_sum_times_j_sum = i_sum.*j_sum;
             aaa = tau_start:tau_step:tau_end;
             bbb = groundStateEnergy - eigenValues_up;
@@ -121,6 +144,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
                 resulting_vector(i_f + 2) = ress(i_f);
             end
             up_gf_temp = [up_gf_temp resulting_vector];
+            fprintf('    Worker %2d: End.\n', i_parfor)
         end
         fprintf('Done with spin-up Greens function calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))        
         up_gf_temp = up_gf_temp(:, 2:end);
@@ -164,26 +188,34 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
                                                 NUM_OF_EIGEN_VALUES_DN, 'sa', OPTS);
         eigenValues_dn = diag(eigenValues_dn);
         fprintf('Done with diagonalization at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
-
+        save(aux_file_name, '-append', 'eigenVectors_dn', '-mat', '-v7.3'); 
         for i_f = 1:length(output_files)
             save(output_files{i_f},'-append','eigenValues_dn','eigenVectors_dn', 'secondHamiltonianDn', '-v7.3');            
         end     
-        clearvars i_f secondHamiltonianDn;
+        clearvars i_f secondHamiltonianDn eigenVectors_dn;
 
         fprintf('Begin spin-down Greens function calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
         fprintf('Number of workers in pool: %d\n', matlabpool('size'))
         
         dn_gf_temp = zeros( length(list_of_taus) + 2, 1 );        
         parfor i_parfor = 1:length(indices_to_be_evaluated)
+%             groundState_inside_parfor = first_Hamiltonian_wrapper.Value;
+            fprintf('    Worker %2d: Begin.\n', i_parfor)
+            groundState_inside_parfor = aux_file_object.groundState;
+            fprintf('    Worker %2d: Loaded ground state from %s.\n', i_parfor, aux_file_name)
+            
+            eigenVectors_dn_inside_parfor = aux_file_object.eigenVectors_dn;
+            fprintf('    Worker %2d: Loaded eigenVector_up from %s.\n', i_parfor, aux_file_name)
+            
             linear_index = indices_to_be_evaluated(i_parfor);
             i_site = mod( linear_index - 1,noOfSites)+1; % "row"
             j_site = floor(( linear_index - 1 )/noOfSites)+1; % "column"
             destructionMatrixDn = creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'dn' )';
-            left_wave_function = (groundState') * destructionMatrixDn;
+            left_wave_function = (groundState_inside_parfor') * destructionMatrixDn;
             creationMatrixDn = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'dn' );
-            right_wave_function =  creationMatrixDn * groundState;
-            i_sum = sum(bsxfun(@times, left_wave_function', eigenVectors_dn));
-            j_sum = sum(bsxfun(@times, right_wave_function, eigenVectors_dn));
+            right_wave_function =  creationMatrixDn * groundState_inside_parfor;
+            i_sum = sum(bsxfun(@times, left_wave_function', eigenVectors_dn_inside_parfor));
+            j_sum = sum(bsxfun(@times, right_wave_function, eigenVectors_dn_inside_parfor));
             i_sum_times_j_sum = i_sum.*j_sum;
             aaa = tau_start:tau_step:tau_end;
             bbb = groundStateEnergy - eigenValues_dn;
@@ -196,6 +228,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
                 resulting_vector(i_f + 2) = ress(i_f);
             end
             dn_gf_temp = [dn_gf_temp resulting_vector];
+            fprintf('    Worker %2d: End.\n', i_parfor)
         end
         fprintf('Done with spin-down Greens function calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))        
         dn_gf_temp = dn_gf_temp(:, 2:end);   
@@ -243,4 +276,9 @@ fprintf('Finish all calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
 if strcmp( need_profiling, 'Yes' )
     profsave(profile('info'), profile_directory_name);
 end
+end
+
+function loaded_ground_state = load_first_Hamiltonian_ground_state(aux_file_name)
+aux_file = matfile(aux_file_name);
+loaded_ground_state = aux_file.groundState;
 end
