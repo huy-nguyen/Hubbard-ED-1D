@@ -114,13 +114,11 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         fprintf('Number of workers in pool: %d\n', matlabpool('size'))
         up_gf_temp = zeros( length(list_of_taus) + 2, 1 );        
         parfor i_parfor = 1:length(indices_to_be_evaluated)
-%             groundState_inside_parfor = first_Hamiltonian_wrapper.Value;
-            fprintf('    Worker %2d: Begin.\n', i_parfor)
-            
-            groundState_inside_parfor = aux_file_object.groundState;
+            fprintf('    Worker %2d: Begin.\n', i_parfor)            
+            groundState_inside_parfor = load_first_Hamiltonian_ground_state(aux_file_object);
             fprintf('    Worker %2d: Loaded ground state from %s.\n', i_parfor, aux_file_name)
             
-            eigenVectors_up_inside_parfor = aux_file_object.eigenVectors_up;
+            eigenVectors_up_inside_parfor = load_eigenVectors_up(aux_file_object);
             fprintf('    Worker %2d: Loaded eigenVector_up from %s.\n', i_parfor, aux_file_name)
             
             linear_index = indices_to_be_evaluated(i_parfor);
@@ -199,12 +197,11 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         
         dn_gf_temp = zeros( length(list_of_taus) + 2, 1 );        
         parfor i_parfor = 1:length(indices_to_be_evaluated)
-%             groundState_inside_parfor = first_Hamiltonian_wrapper.Value;
             fprintf('    Worker %2d: Begin.\n', i_parfor)
-            groundState_inside_parfor = aux_file_object.groundState;
+            groundState_inside_parfor = load_first_Hamiltonian_ground_state(aux_file_object);
             fprintf('    Worker %2d: Loaded ground state from %s.\n', i_parfor, aux_file_name)
             
-            eigenVectors_dn_inside_parfor = aux_file_object.eigenVectors_dn;
+            eigenVectors_dn_inside_parfor = load_eigenVectors_dn(aux_file_object);
             fprintf('    Worker %2d: Loaded eigenVector_up from %s.\n', i_parfor, aux_file_name)
             
             linear_index = indices_to_be_evaluated(i_parfor);
@@ -278,7 +275,14 @@ if strcmp( need_profiling, 'Yes' )
 end
 end
 
-function loaded_ground_state = load_first_Hamiltonian_ground_state(aux_file_name)
-aux_file = matfile(aux_file_name);
-loaded_ground_state = aux_file.groundState;
+function loaded_ground_state = load_first_Hamiltonian_ground_state(aux_file_object)
+loaded_ground_state = aux_file_object.groundState;
+end
+
+function loaded_eigenVectors_up = load_eigenVectors_up(aux_file_object)
+loaded_eigenVectors_up = aux_file_object.eigenVectors_up;
+end
+
+function loaded_eigenVectors_dn = load_eigenVectors_dn(aux_file_object)
+loaded_eigenVectors_dn = aux_file_object.eigenVectors_dn;
 end
