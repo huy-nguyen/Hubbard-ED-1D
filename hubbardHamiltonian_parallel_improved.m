@@ -11,11 +11,17 @@ j_assignment = splitvect(original_j, NUM_CORES);
 potential_sparse_input = zeros(1, 3);
 
 parfor core_counter_potential=1:NUM_CORES
-    extracted_up_states = extracted_up_states_outside;
-    extracted_dn_states = extracted_dn_states_outside;
+    [ combinedBasis_inside_parfor, dummy1,dymmy2, dummy3, dummy4, dummy5 ] = generateBasis( noOfSites, noOfUp, noOfDn );
+    
+%     extracted_up_states = extracted_up_states_outside;
+%     extracted_dn_states = extracted_dn_states_outside;
     j_to_work_on = j_assignment{core_counter_potential};
-    up_states_to_work_on = extracted_up_states(j_to_work_on);
-    dn_states_to_work_on = extracted_dn_states(j_to_work_on);
+%     up_states_to_work_on = extracted_up_states(j_to_work_on);
+%     dn_states_to_work_on = extracted_dn_states(j_to_work_on);    
+    
+    up_states_to_work_on = combinedBasis_inside_parfor(j_to_work_on, 2);
+    dn_states_to_work_on = combinedBasis_inside_parfor(j_to_work_on, 3);    
+    
     results_in_core_loop = zeros( length(j_to_work_on), 3);
     for j = 1:length(j_to_work_on)
         upSectorDec= up_states_to_work_on(j);
