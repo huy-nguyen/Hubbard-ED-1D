@@ -1,18 +1,32 @@
 function [ totalHamiltonian, kineticHamiltonian,  potentialHamiltonian] = hubbardHamiltonian_parallel_improved( t, U, noOfSites, noOfUp, noOfDn, NUM_CORES )
 
 totalNoOfPossiblestates = nchoosek( noOfSites, noOfUp) * nchoosek( noOfSites, noOfDn);
-%% POTENTIAL HAMILTONIAN:
-potential_sparse_input = zeros(1, 3);
 
-parfor core_counter_potential=1:NUM_CORES
+%% POTENTIAL HAMILTONIAN:
+aux_file_names_potential = {};
+
+fprintf('    Generating the potential Hamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
+for i_core =1:NUM_CORES    
+aux_file_names_potential{i_core} = strcat('aux_potential_',num2str(noOfSites, '%02d'),...
+                                    '_sites_',num2str(noOfUp, '%02d'),...
+                                    'u',num2str(noOfDn, '%02d'),...
+                                    '_U_',num2str(U, '%4.2f'),...
+                                    '_t_',num2str(t),...                                       
+                                    '_num_', num2str(i_core, '%02d'),...
+                                    ' ',datestr(now,'_yymmdd_HHMMSS'),'.mat');
+save(aux_file_names_potential{i_core}, 't', 'U', 'noOfSites', 'noOfUp', 'noOfDn', 'i_core');
+end
+
+for core_counter_potential=1:NUM_CORES
+    fprintf('        Worker %d: Begin.\n', core_counter_potential)
+    
     [ combinedBasis_inside_parfor, num_of_states_inside_parfor,dymmy2, dummy3, dummy4, dummy5 ] = generateBasis( noOfSites, noOfUp, noOfDn );
     splitsize = 1 / NUM_CORES * num_of_states_inside_parfor;    
     start_index = floor(round((core_counter_potential-1)*splitsize)) + 1;
     stop_index = floor(round((core_counter_potential)*splitsize));
     j_to_work_on = start_index:stop_index;    
     up_states_to_work_on = combinedBasis_inside_parfor(j_to_work_on, 2);
-    dn_states_to_work_on = combinedBasis_inside_parfor(j_to_work_on, 3);    
-    
+    dn_states_to_work_on = combinedBasis_inside_parfor(j_to_work_on, 3);        
     results_in_core_loop = zeros( length(j_to_work_on), 3);
     for j = 1:length(j_to_work_on)
         upSectorDec= up_states_to_work_on(j);
@@ -25,19 +39,50 @@ parfor core_counter_potential=1:NUM_CORES
         results_in_core_loop(j, 1) = j_to_work_on(j);
         results_in_core_loop(j, 2) = j_to_work_on(j);
     end
-    potential_sparse_input = [potential_sparse_input; results_in_core_loop];
+    save_potential_Hamiltonian_segment(aux_file_names_potential{core_counter_potential}, results_in_core_loop);
+    
+    fprintf('        Worker %d: End.\n', core_counter_potential)
 end
 
-potentialHamiltonian = sparse( potential_sparse_input(2:end, 1), potential_sparse_input(2:end, 2), potential_sparse_input(2:end, 3),    totalNoOfPossiblestates, totalNoOfPossiblestates);
+fprintf('    Assembling the potential Hamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
+potential_sparse_input = zeros( totalNoOfPossiblestates, 3);
+last_non_zero_elem_in_potential = 0;
+for i_core =1:NUM_CORES 
+    current_aux_file_object = matfile( aux_file_names_potential{i_core} );
+    [nrows, dummy] = size(current_aux_file_object, 'results_in_core_loop');
+    potential_sparse_input( (last_non_zero_elem_in_potential+1): (last_non_zero_elem_in_potential+nrows) , :) ...
+                                            = current_aux_file_object.results_in_core_loop;
+    last_non_zero_elem_in_potential = last_non_zero_elem_in_potential + nrows;                           
+end
+
+potentialHamiltonian = sparse( potential_sparse_input(:, 1), potential_sparse_input(:, 2), potential_sparse_input(:, 3), totalNoOfPossiblestates, totalNoOfPossiblestates);
+fprintf('    Done with assembling the potential Hamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
 clearvars upSectorDec dnSectorDec upSector dnSector;
 
 %% KINETIC HAMILTONIAN:
 % the number of electrons to be hopped over if the electrons hop around the lattice boundary (can easily see that this must be the case):
 noOfUpInterior=noOfUp-1;
 noOfDnInterior=noOfDn-1;
+
+aux_file_names_kinetic = {};
+fprintf('    Generating the kinetic Hamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
+for i_core =1:NUM_CORES    
+aux_file_names_kinetic{i_core} = strcat('aux_kinetic_',num2str(noOfSites, '%02d'),...
+                                    '_sites_',num2str(noOfUp, '%02d'),...
+                                    'u',num2str(noOfDn, '%02d'),...
+                                    '_U_',num2str(U, '%4.2f'),...
+                                    '_t_',num2str(t),...                                       
+                                    '_num_', num2str(i_core, '%02d'),...
+                                    ' ',datestr(now,'_yymmdd_HHMMSS'),'.mat');
+save(aux_file_names_kinetic{i_core}, 't', 'U', 'noOfSites', 'noOfUp', 'noOfDn', 'i_core');
+end
+
 max_kinetic_num_non_zero_per_iteration = 2*max(1, (noOfSites - noOfUp)) + 2*max(1, (noOfSites - noOfDn) );
-kinetic = zeros(1, 3);
+% kinetic = zeros(1, 3);
+
+actual_num_non_zero_elems_kinetic = 0;
 parfor core_counter_kinetic = 1:NUM_CORES 
+    fprintf('        Worker %d: Begin.\n', core_counter_kinetic)
     [ combinedBasis_inside_parfor, num_of_states_inside_parfor,dummy2, totalNoOfDnStates, upStates, dnStates ] = generateBasis( noOfSites, noOfUp, noOfDn );
     splitsize = 1 / NUM_CORES * num_of_states_inside_parfor;
     start_index = floor(round((core_counter_kinetic-1)*splitsize)) + 1;
@@ -209,12 +254,33 @@ parfor core_counter_kinetic = 1:NUM_CORES
     kinetic_core_rows = kinetic_core_rows( kinetic_core_rows ~= 0);
     kinetic_core_cols = kinetic_core_cols( 1:length(kinetic_core_rows));
     kinetic_core_elems = kinetic_core_elems( 1:length(kinetic_core_rows));    
-    kinetic_per_core = horzcat(kinetic_core_rows, kinetic_core_cols, kinetic_core_elems);      
-    kinetic = [kinetic; kinetic_per_core];
+    kinetic_per_core = horzcat(kinetic_core_rows, kinetic_core_cols, kinetic_core_elems); 
+    save_kinetic_Hamiltonian_segment( aux_file_names_kinetic{core_counter_kinetic}, kinetic_per_core);
+    actual_num_non_zero_elems_kinetic = actual_num_non_zero_elems_kinetic + length(kinetic_core_rows);
+    fprintf('        Worker %d: End.\n', core_counter_kinetic)
 end
 
-kineticHamiltonian = sparse( kinetic(2:end,1), kinetic(2:end,2), kinetic(2:end,3), totalNoOfPossiblestates, totalNoOfPossiblestates);
+fprintf('    Assembling the kinetic Hamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
+kinetic = zeros( actual_num_non_zero_elems_kinetic, 3);
+last_non_zero_elem_in_kinetic = 0;
+for i_core =1:NUM_CORES 
+    current_aux_file_object = matfile( aux_file_names_kinetic{i_core} );
+    [nrows, dummy] = size(current_aux_file_object, 'kinetic_per_core');
+    kinetic( (last_non_zero_elem_in_kinetic+1): (last_non_zero_elem_in_kinetic+nrows) , :) ...
+                                            = current_aux_file_object.kinetic_per_core;
+    last_non_zero_elem_in_kinetic = last_non_zero_elem_in_kinetic + nrows;
+end
+kineticHamiltonian = sparse( kinetic(:,1), kinetic(:,2), kinetic(:,3), totalNoOfPossiblestates, totalNoOfPossiblestates);
+fprintf('    Done with assembling the kinetic Hamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
 %% TOTAL HAMILTONIAN:
 totalHamiltonian=kineticHamiltonian+potentialHamiltonian;
 
+end
+
+function save_kinetic_Hamiltonian_segment(aux_file_name, kinetic_per_core)
+save(aux_file_name, '-append', 'kinetic_per_core', '-v7.3');
+end
+
+function save_potential_Hamiltonian_segment(aux_file_name, results_in_core_loop)
+save(aux_file_name, '-append', 'results_in_core_loop', '-v7.3');
 end
