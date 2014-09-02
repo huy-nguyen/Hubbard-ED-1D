@@ -115,23 +115,26 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         fprintf('Number of workers in pool: %d\n', matlabpool('size'))
         up_gf_temp = zeros( length(list_of_taus) + 2, 1 );        
         parfor i_parfor = 1:length(indices_to_be_evaluated)
-            fprintf('    Worker %2d: Begin.\n', i_parfor)            
-            groundState_inside_parfor = load_first_Hamiltonian_ground_state(aux_file_object);
-            fprintf('    Worker %2d: Loaded ground state from %s.\n', i_parfor, aux_file_name)
-            
-            eigenVectors_up_inside_parfor = load_eigenVectors_up(aux_file_object);
-            fprintf('    Worker %2d: Loaded eigenVector_up from %s.\n', i_parfor, aux_file_name)
-            
+            fprintf('    Worker %2d: Begin.\n', i_parfor)              
             linear_index = indices_to_be_evaluated(i_parfor);
             i_site = mod( linear_index - 1,noOfSites)+1; % "row"
-            j_site = floor(( linear_index - 1 )/noOfSites)+1; % "column"
-            destructionMatrixUp = creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )';
-            left_wave_function = (groundState_inside_parfor') * destructionMatrixUp;
-            creationMatrixUp = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'up' );
-            right_wave_function =  creationMatrixUp * groundState_inside_parfor;
-            i_sum = sum(bsxfun(@times, left_wave_function', eigenVectors_up_inside_parfor));
-            j_sum = sum(bsxfun(@times, right_wave_function, eigenVectors_up_inside_parfor));
-            i_sum_times_j_sum = i_sum.*j_sum;
+            j_site = floor(( linear_index - 1 )/noOfSites)+1; % "column"                    
+            
+            i_sum = sum(bsxfun(@times, ...
+                               ( (load_first_Hamiltonian_ground_state(aux_file_object))' * ...
+                                                creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )' )' , ...
+                               load_eigenVectors_up(aux_file_object)...
+                               )...
+                        );            
+            
+            j_sum = sum(bsxfun(@times, ...
+                               ( creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'up' ) * ...
+                                                load_first_Hamiltonian_ground_state(aux_file_object) ), ...
+                               load_eigenVectors_up(aux_file_object) ...
+                               )...
+                        );
+            
+            i_sum_times_j_sum = i_sum.*j_sum;                        
             aaa = tau_start:tau_step:tau_end;
             bbb = groundStateEnergy - eigenValues_up;
             expo_factor = exp( bbb * aaa)';
@@ -198,23 +201,26 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         
         dn_gf_temp = zeros( length(list_of_taus) + 2, 1 );        
         parfor i_parfor = 1:length(indices_to_be_evaluated)
-            fprintf('    Worker %2d: Begin.\n', i_parfor)
-            groundState_inside_parfor = load_first_Hamiltonian_ground_state(aux_file_object);
-            fprintf('    Worker %2d: Loaded ground state from %s.\n', i_parfor, aux_file_name)
-            
-            eigenVectors_dn_inside_parfor = load_eigenVectors_dn(aux_file_object);
-            fprintf('    Worker %2d: Loaded eigenVector_up from %s.\n', i_parfor, aux_file_name)
-            
+            fprintf('    Worker %2d: Begin.\n', i_parfor)              
             linear_index = indices_to_be_evaluated(i_parfor);
             i_site = mod( linear_index - 1,noOfSites)+1; % "row"
-            j_site = floor(( linear_index - 1 )/noOfSites)+1; % "column"
-            destructionMatrixDn = creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'dn' )';
-            left_wave_function = (groundState_inside_parfor') * destructionMatrixDn;
-            creationMatrixDn = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'dn' );
-            right_wave_function =  creationMatrixDn * groundState_inside_parfor;
-            i_sum = sum(bsxfun(@times, left_wave_function', eigenVectors_dn_inside_parfor));
-            j_sum = sum(bsxfun(@times, right_wave_function, eigenVectors_dn_inside_parfor));
-            i_sum_times_j_sum = i_sum.*j_sum;
+            j_site = floor(( linear_index - 1 )/noOfSites)+1; % "column"                    
+            
+            i_sum = sum(bsxfun(@times, ...
+                               ( (load_first_Hamiltonian_ground_state(aux_file_object))' * ...
+                                                creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'dn' )' )' , ...
+                               load_eigenVectors_dn(aux_file_object)...
+                               )...
+                        );            
+            
+            j_sum = sum(bsxfun(@times, ...
+                               creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'dn' ) * ...
+                                                load_first_Hamiltonian_ground_state(aux_file_object), ...
+                               load_eigenVectors_dn(aux_file_object) ...
+                               )...
+                        );
+            
+            i_sum_times_j_sum = i_sum.*j_sum;                        
             aaa = tau_start:tau_step:tau_end;
             bbb = groundStateEnergy - eigenValues_dn;
             expo_factor = exp( bbb * aaa)';
