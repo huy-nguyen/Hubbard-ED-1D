@@ -24,7 +24,8 @@ aux_file_name = strcat('aux_',num2str(noOfSites, '%02d'),...
                                         '_t_',num2str(t),...
                                         '_eigen_', num2str(NUM_OF_EIGEN_VALUES, '%04d'),...
                                         ' ',datestr(now,'_yymmdd_HHMMSS'),'.mat');
-                                
+fprintf('Aux file: %s.\n\n', aux_file_name)
+
 if strcmp( need_profiling, 'Yes' )
     fprintf('Profile directory: %s.\n', profile_directory_name )
 end
