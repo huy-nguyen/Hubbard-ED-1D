@@ -17,7 +17,7 @@ aux_file_names_potential{i_core} = strcat('aux_potential_',num2str(noOfSites, '%
 save(aux_file_names_potential{i_core}, 't', 'U', 'noOfSites', 'noOfUp', 'noOfDn', 'i_core');
 end
 
-for core_counter_potential=1:NUM_CORES
+parfor core_counter_potential=1:NUM_CORES
     fprintf('        Worker %d: Begin.\n', core_counter_potential)
     
     [ combinedBasis_inside_parfor, num_of_states_inside_parfor,dymmy2, dummy3, dummy4, dummy5 ] = generateBasis( noOfSites, noOfUp, noOfDn );
