@@ -1,13 +1,7 @@
 function [ totalHamiltonian, kineticHamiltonian,  potentialHamiltonian] = hubbardHamiltonian_parallel_improved( t, U, noOfSites, noOfUp, noOfDn, NUM_CORES )
 
-[ combinedBasis, totalNoOfPossiblestates,totalNoOfUpStates, totalNoOfDnStates, upStates, dnStates ] = generateBasis( noOfSites, noOfUp, noOfDn );
-
+totalNoOfPossiblestates = nchoosek( noOfSites, noOfUp) * nchoosek( noOfSites, noOfDn);
 %% POTENTIAL HAMILTONIAN:
-extracted_up_states_outside = combinedBasis(:,2); % for parfor
-extracted_dn_states_outside = combinedBasis(:,3);
-original_j = 1:totalNoOfPossiblestates;
-j_assignment = splitvect(original_j, NUM_CORES);
-
 potential_sparse_input = zeros(1, 3);
 
 parfor core_counter_potential=1:NUM_CORES
@@ -35,7 +29,7 @@ parfor core_counter_potential=1:NUM_CORES
 end
 
 potentialHamiltonian = sparse( potential_sparse_input(2:end, 1), potential_sparse_input(2:end, 2), potential_sparse_input(2:end, 3),    totalNoOfPossiblestates, totalNoOfPossiblestates);
-clearvars  extracted_up_states extracted_dn_states original j j_assisgnment upSectorDec dnSectorDec upSector dnSector;
+clearvars upSectorDec dnSectorDec upSector dnSector;
 
 %% KINETIC HAMILTONIAN:
 % the number of electrons to be hopped over if the electrons hop around the lattice boundary (can easily see that this must be the case):
@@ -43,14 +37,14 @@ noOfUpInterior=noOfUp-1;
 noOfDnInterior=noOfDn-1;
 max_kinetic_num_non_zero_per_iteration = 2*max(1, (noOfSites - noOfUp)) + 2*max(1, (noOfSites - noOfDn) );
 kinetic = zeros(1, 3);
-original_m = 1:totalNoOfPossiblestates;
-m_assignment = splitvect(original_m, NUM_CORES);
-parfor core_counter_kinetic = 1:NUM_CORES % will be parfor    
-    extracted_up_states = extracted_up_states_outside;
-    extracted_dn_states = extracted_dn_states_outside;
-    m_to_work_on = m_assignment{core_counter_kinetic};
-    up_states_to_work_on = extracted_up_states( m_to_work_on);
-    dn_states_to_work_on = extracted_dn_states( m_to_work_on);
+parfor core_counter_kinetic = 1:NUM_CORES 
+    [ combinedBasis_inside_parfor, num_of_states_inside_parfor,dummy2, totalNoOfDnStates, upStates, dnStates ] = generateBasis( noOfSites, noOfUp, noOfDn );
+    splitsize = 1 / NUM_CORES * num_of_states_inside_parfor;
+    start_index = floor(round((core_counter_kinetic-1)*splitsize)) + 1;
+    stop_index = floor(round((core_counter_kinetic)*splitsize));
+    m_to_work_on = start_index:stop_index;   
+    up_states_to_work_on = combinedBasis_inside_parfor( m_to_work_on, 2);
+    dn_states_to_work_on = combinedBasis_inside_parfor( m_to_work_on, 3);
     
     KINETIC_COUNTER = 0;
     kinetic_core_rows = zeros(ceil(max_kinetic_num_non_zero_per_iteration / NUM_CORES), 1);
