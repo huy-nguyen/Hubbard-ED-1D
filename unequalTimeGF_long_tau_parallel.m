@@ -109,73 +109,57 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         for i_f = 1:length(output_files)
             save(output_files{i_f},'-append','eigenValues_up','eigenVectors_up', 'secondHamiltonianUp', '-v7.3');            
         end     
-        clearvars i_f secondHamiltonianUp eigenVectors_up;
+        clearvars i_f secondHamiltonianUp;
 
         fprintf('Begin spin-up Greens function calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))    
         fprintf('Number of workers in pool: %d\n', matlabpool('size'))
-        up_gf_temp = zeros( length(list_of_taus) + 2, 1 );        
-        parfor i_parfor = 1:length(indices_to_be_evaluated)
-            fprintf('    Worker %2d: Begin.\n', i_parfor)              
-            linear_index = indices_to_be_evaluated(i_parfor);
-            i_site = mod( linear_index - 1,noOfSites)+1; % "row"
-            j_site = floor(( linear_index - 1 )/noOfSites)+1; % "column"                    
-            
-            i_sum = sum(bsxfun(@times, ...
-                               ( (load_first_Hamiltonian_ground_state(aux_file_object))' * ...
-                                                creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )' )' , ...
-                               load_eigenVectors_up(aux_file_object)...
-                               )...
-                        );            
-            
+%         up_gf_temp = zeros( length(list_of_taus) + 2, 1 ); 
+        i_site = 1;
+        
+        i_sum = sum(bsxfun(@times, ...
+                           ( (load_first_Hamiltonian_ground_state(aux_file_object))' * ...
+                                            creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )' )' , ...
+                           eigenVectors_up...
+                           )...
+                    );    
+        up_gf_temp = zeros(length(list_of_taus) + 1, 1);
+        clearvars eigenVectors_up
+        
+        parfor j_site = 1:noOfSites
             j_sum = sum(bsxfun(@times, ...
                                ( creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'up' ) * ...
                                                 load_first_Hamiltonian_ground_state(aux_file_object) ), ...
                                load_eigenVectors_up(aux_file_object) ...
                                )...
-                        );
-            
+                        );            
             i_sum_times_j_sum = i_sum.*j_sum;                        
             aaa = tau_start:tau_step:tau_end;
             bbb = groundStateEnergy - eigenValues_up;
             expo_factor = exp( bbb * aaa)';
             ress = sum(bsxfun(@times, i_sum_times_j_sum,expo_factor), 2);            
-            resulting_vector = zeros( length(list_of_taus) + 2, 1);
-            resulting_vector( 1) = i_site;
-            resulting_vector( 2) = j_site;
+            resulting_vector = zeros( length(list_of_taus) + 1, 1);
+            resulting_vector( 1) = j_site;
             for i_f = 1:length(output_files)
-                resulting_vector(i_f + 2) = ress(i_f);
+                resulting_vector(i_f + 1) = ress(i_f);
             end
             up_gf_temp = [up_gf_temp resulting_vector];
-            fprintf('    Worker %2d: End.\n', i_parfor)
+            fprintf('    Worker %2d: End.\n', j_site)
         end
+        
         fprintf('Done with spin-up Greens function calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))        
         up_gf_temp = up_gf_temp(:, 2:end);
+        up_gf_temp = sortrows( up_gf_temp')';
+        up_gf_temp = up_gf_temp(2:end, :);
         
-        spinUpGreenFunctionCellArray = cell(1, length(output_files) );        
-        for i = 1:length(output_files)
-            spinUpGreenFunctionCellArray{i} = zeros(noOfSites);
-        end
-        
-        for i_column_temp = 1:size(up_gf_temp, 2)
-            i_site = up_gf_temp(1, i_column_temp);
-            j_site = up_gf_temp(2, i_column_temp);
-            for t_tau = 1:length(output_files)
-                spinUpGreenFunctionCellArray{t_tau}( i_site, j_site) = up_gf_temp(t_tau + 2, i_column_temp);
-            end
-        end
         
         for t_tau = 1:length(output_files)
-            spinUpGreenFunction = spinUpGreenFunctionCellArray{t_tau};    
-            element_at_1_1 = spinUpGreenFunction(1, 1);
-            spinUpGreenFunction = spinUpGreenFunction + spinUpGreenFunction';
-            for i_diag = 1:noOfSites
-                spinUpGreenFunction(i_diag, i_diag) = element_at_1_1;
-            end
+            spinUpGreenFunction = up_gf_temp(t_tau,:);   
             save(output_files{t_tau},'-append', 'spinUpGreenFunction', 'NUM_OF_EIGEN_VALUES_UP', '-v7.3');
-        end       
+        end               
 
     end
-%% SPIN DOWN:      
+%% SPIN DOWN:           
+        
     if strcmp( sector, 'dn' ) || strcmp( sector, 'both' )        
         if NUM_OF_EIGEN_VALUES >= expanded_space_size_dn
             NUM_OF_EIGEN_VALUES_DN = expanded_space_size_dn - 1;
@@ -190,77 +174,57 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
                                                 NUM_OF_EIGEN_VALUES_DN, 'sa', OPTS);
         eigenValues_dn = diag(eigenValues_dn);
         fprintf('Done with diagonalization at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
-        save(aux_file_name, '-append', 'eigenVectors_dn', '-mat', '-v7.3'); 
+        save(aux_file_name, '-append', 'eigenVectors_dn', '-mat', '-v7.3');
         for i_f = 1:length(output_files)
             save(output_files{i_f},'-append','eigenValues_dn','eigenVectors_dn', 'secondHamiltonianDn', '-v7.3');            
         end     
-        clearvars i_f secondHamiltonianDn eigenVectors_dn;
+        clearvars i_f secondHamiltonianDn;
 
-        fprintf('Begin spin-down Greens function calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
+        fprintf('Begin spin-up Greens function calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))    
         fprintf('Number of workers in pool: %d\n', matlabpool('size'))
+        i_site = 1;        
+        i_sum = sum(bsxfun(@times, ...
+                           ( (load_first_Hamiltonian_ground_state(aux_file_object))' * ...
+                                            creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'dn' )' )' , ...
+                           eigenVectors_dn...
+                           )...
+                    );    
+        dn_gf_temp = zeros(length(list_of_taus) + 1, 1);
+        clearvars eigenVectors_dn
         
-        dn_gf_temp = zeros( length(list_of_taus) + 2, 1 );        
-        parfor i_parfor = 1:length(indices_to_be_evaluated)
-            fprintf('    Worker %2d: Begin.\n', i_parfor)              
-            linear_index = indices_to_be_evaluated(i_parfor);
-            i_site = mod( linear_index - 1,noOfSites)+1; % "row"
-            j_site = floor(( linear_index - 1 )/noOfSites)+1; % "column"                    
-            
-            i_sum = sum(bsxfun(@times, ...
-                               ( (load_first_Hamiltonian_ground_state(aux_file_object))' * ...
-                                                creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'dn' )' )' , ...
-                               load_eigenVectors_dn(aux_file_object)...
-                               )...
-                        );            
-            
+        parfor j_site = 1:noOfSites
             j_sum = sum(bsxfun(@times, ...
-                               creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'dn' ) * ...
-                                                load_first_Hamiltonian_ground_state(aux_file_object), ...
+                               ( creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'dn' ) * ...
+                                                load_first_Hamiltonian_ground_state(aux_file_object) ), ...
                                load_eigenVectors_dn(aux_file_object) ...
                                )...
-                        );
-            
+                        );            
             i_sum_times_j_sum = i_sum.*j_sum;                        
             aaa = tau_start:tau_step:tau_end;
             bbb = groundStateEnergy - eigenValues_dn;
             expo_factor = exp( bbb * aaa)';
             ress = sum(bsxfun(@times, i_sum_times_j_sum,expo_factor), 2);            
-            resulting_vector = zeros( length(list_of_taus) + 2, 1);
-            resulting_vector( 1) = i_site;
-            resulting_vector( 2) = j_site;
+            resulting_vector = zeros( length(list_of_taus) + 1, 1);
+            resulting_vector( 1) = j_site;
             for i_f = 1:length(output_files)
-                resulting_vector(i_f + 2) = ress(i_f);
+                resulting_vector(i_f + 1) = ress(i_f);
             end
             dn_gf_temp = [dn_gf_temp resulting_vector];
-            fprintf('    Worker %2d: End.\n', i_parfor)
-        end
-        fprintf('Done with spin-down Greens function calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))        
-        dn_gf_temp = dn_gf_temp(:, 2:end);   
-        
-        spinDnGreenFunctionCellArray = cell(1, length(output_files) );        
-        for i = 1:length(output_files)
-            spinDnGreenFunctionCellArray{i} = zeros(noOfSites);
+            fprintf('    Worker %2d: End.\n', j_site)
         end
         
-        for i_column_temp = 1:size(dn_gf_temp, 2)
-            i_site = dn_gf_temp(1, i_column_temp);
-            j_site = dn_gf_temp(2, i_column_temp);
-            for t_tau = 1:length(output_files)
-                spinDnGreenFunctionCellArray{t_tau}( i_site, j_site) = dn_gf_temp(t_tau + 2, i_column_temp);
-            end
-        end
+        fprintf('Done with spin-up Greens function calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))        
+        dn_gf_temp = dn_gf_temp(:, 2:end);
+        dn_gf_temp = sortrows( dn_gf_temp')';
+        dn_gf_temp = dn_gf_temp(2:end, :);
+        
         
         for t_tau = 1:length(output_files)
-            spinDnGreenFunction = spinDnGreenFunctionCellArray{t_tau};    
-            element_at_1_1 = spinDnGreenFunction(1, 1);
-            spinDnGreenFunction = spinDnGreenFunction + spinDnGreenFunction';
-            for i_diag = 1:noOfSites
-                spinDnGreenFunction(i_diag, i_diag) = element_at_1_1;
-            end
+            spinDnGreenFunction = dn_gf_temp(t_tau,:);   
             save(output_files{t_tau},'-append', 'spinDnGreenFunction', 'NUM_OF_EIGEN_VALUES_DN', '-v7.3');
-        end       
+        end               
+
     end
-    
 else
     error('Error: cannot apply creation operator when number of electrons = number of sites');
 end
