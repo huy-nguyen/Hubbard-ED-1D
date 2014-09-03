@@ -180,7 +180,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         end     
         clearvars i_f secondHamiltonianDn;
 
-        fprintf('Begin spin-up Greens function calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))    
+        fprintf('Begin spin-down Greens function calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))    
         fprintf('Number of workers in pool: %d\n', matlabpool('size'))
         i_site = 1;        
         i_sum = sum(bsxfun(@times, ...
@@ -213,7 +213,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
             fprintf('    Worker %2d: End.\n', j_site)
         end
         
-        fprintf('Done with spin-up Greens function calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))        
+        fprintf('Done with spin-down Greens function calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))        
         dn_gf_temp = dn_gf_temp(:, 2:end);
         dn_gf_temp = sortrows( dn_gf_temp')';
         dn_gf_temp = dn_gf_temp(2:end, :);
