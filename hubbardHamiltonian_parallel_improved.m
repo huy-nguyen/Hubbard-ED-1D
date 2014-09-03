@@ -1,4 +1,4 @@
-function [ totalHamiltonian, kineticHamiltonian,  potentialHamiltonian] = hubbardHamiltonian_parallel_improved( t, U, noOfSites, noOfUp, noOfDn, NUM_CORES )
+function totalHamiltonian = hubbardHamiltonian_parallel_improved( t, U, noOfSites, noOfUp, noOfDn, NUM_CORES )
 
 totalNoOfPossiblestates = nchoosek( noOfSites, noOfUp) * nchoosek( noOfSites, noOfDn);
 
@@ -77,7 +77,7 @@ aux_file_names_kinetic{i_core} = strcat('aux_kinetic_',num2str(noOfSites, '%02d'
 save(aux_file_names_kinetic{i_core}, 't', 'U', 'noOfSites', 'noOfUp', 'noOfDn', 'i_core');
 end
 
-max_kinetic_num_non_zero_per_iteration = totalNoOfPossiblestates * 2 * (noOfUp + noOfDn)
+max_kinetic_num_non_zero_per_iteration = totalNoOfPossiblestates * 2 * (noOfUp + noOfDn);
 
 actual_num_non_zero_elems_kinetic = 0;
 parfor core_counter_kinetic = 1:NUM_CORES 
