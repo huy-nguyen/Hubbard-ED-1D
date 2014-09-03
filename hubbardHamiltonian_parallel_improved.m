@@ -77,8 +77,7 @@ aux_file_names_kinetic{i_core} = strcat('aux_kinetic_',num2str(noOfSites, '%02d'
 save(aux_file_names_kinetic{i_core}, 't', 'U', 'noOfSites', 'noOfUp', 'noOfDn', 'i_core');
 end
 
-max_kinetic_num_non_zero_per_iteration = 2*max(1, (noOfSites - noOfUp)) + 2*max(1, (noOfSites - noOfDn) );
-% kinetic = zeros(1, 3);
+max_kinetic_num_non_zero_per_iteration = totalNoOfPossiblestates * 2 * (noOfUp + noOfDn)
 
 actual_num_non_zero_elems_kinetic = 0;
 parfor core_counter_kinetic = 1:NUM_CORES 
