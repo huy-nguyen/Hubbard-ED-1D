@@ -1,5 +1,9 @@
 function totalHamiltonian = hubbardHamiltonian_parallel_improved( t, U, noOfSites, noOfUp, noOfDn, NUM_CORES )
 
+if (noOfSites==2) 
+   error('noOfSites must be greater than 2.'); 
+end
+
 totalNoOfPossiblestates = nchoosek( noOfSites, noOfUp) * nchoosek( noOfSites, noOfDn);
 
 %% POTENTIAL HAMILTONIAN:
@@ -273,6 +277,10 @@ kineticHamiltonian = sparse( kinetic(:,1), kinetic(:,2), kinetic(:,3), totalNoOf
 fprintf('    Done with assembling the kinetic Hamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
 %% TOTAL HAMILTONIAN:
 totalHamiltonian=kineticHamiltonian+potentialHamiltonian;
+
+for i_core =1:NUM_CORES    
+  delete( aux_file_names_potential{i_core}, aux_file_names_kinetic{i_core});
+end
 
 end
 
