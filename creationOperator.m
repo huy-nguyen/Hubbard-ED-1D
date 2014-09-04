@@ -17,15 +17,13 @@ if ( strcmp(spin,'up')==1 && NUM_UP < NUM_SITES ) || (strcmp(spin,'dn')==1 && NU
         %the indices to extract the correct up/down state from the combined basis table
         INDEX_AFFECTED_SECTOR = 2;
         INDEX_OTHER_SECTOR = 3;
-        NUM_PRECEDING_ELECTRONS=0; % number of electrons the creation operator has to commute through to act on the up sector (zero since the spin up sector is to the left of the spin down sector)
     elseif strcmp(spin,'dn')
         INDEX_AFFECTED_SECTOR = 3;
         INDEX_OTHER_SECTOR = 2;
-        NUM_PRECEDING_ELECTRONS=NUM_UP; % since the creation operator has to commute through all the up electrons in order to act on the spin down sector
     else
         disp('Error');
     end
-        
+    
     max_num_non_zero_elems = TOTAL_STATES_SMALL_BASIS;
     COUNTER = 0;
     output_rows = zeros(max_num_non_zero_elems, 1);
@@ -43,7 +41,7 @@ if ( strcmp(spin,'up')==1 && NUM_UP < NUM_SITES ) || (strcmp(spin,'dn')==1 && NU
             resultantState=currentState;
             resultantState(CREATION_INDEX)=1; % create a particle on the correct site
             numElectronsInBetween=sum(currentState(1:CREATION_INDEX-1)==ones(1,CREATION_INDEX-1)); % number of electrons in between the create and destroy indices
-            numElectronsToCommuteThrough=numElectronsInBetween+NUM_PRECEDING_ELECTRONS;
+            numElectronsToCommuteThrough=numElectronsInBetween;
             
             if mod(numElectronsToCommuteThrough,2)==0 % if the creation operator has to commute through an even number of creation operators to get to the correct position
                 coefficient=1; % then the resulting state doesn't change sign
