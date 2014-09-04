@@ -18,7 +18,7 @@ aux_file_names_potential{i_core} = strcat('aux_potential_',num2str(noOfSites, '%
                                     '_t_',num2str(t),...                                       
                                     '_num_', num2str(i_core, '%02d'),...
                                     ' ',datestr(now,'_yymmdd_HHMMSS'),'.mat');
-save(aux_file_names_potential{i_core}, 't', 'U', 'noOfSites', 'noOfUp', 'noOfDn', 'i_core');
+save(aux_file_names_potential{i_core}, 't', 'U', 'noOfSites', 'noOfUp', 'noOfDn', 'i_core', '-v7.3');
 end
 
 parfor core_counter_potential=1:NUM_CORES
