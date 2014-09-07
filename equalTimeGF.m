@@ -1,5 +1,5 @@
 function output_files = equalTimeGF( t, U, noOfSites, noOfUp, noOfDn, sector, method, commit_number, NUM_CORES )
-% calculate the unequal time GF by expanding exp(-tau*H) = 1 - tau*H
+% calculate equal time GF
 
 expanded_space_size_up = nchoosek(noOfSites,noOfUp+1)*nchoosek(noOfSites,noOfDn);
 expanded_space_size_dn = nchoosek(noOfSites,noOfUp)*nchoosek(noOfSites,noOfDn + 1);
