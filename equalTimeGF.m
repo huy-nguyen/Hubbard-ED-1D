@@ -42,12 +42,7 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
     clearvars i_f;
     clearvars firstHamiltonian groundState;
     if strcmp( sector, 'up' ) || strcmp( sector, 'both' )
-        fprintf('Begin spin-up calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))        
-        fprintf('Generating spin-up secondHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
-        secondHamiltonianUp = hubbardHamiltonian_parallel_improved( t, U, noOfSites, noOfUp+1, noOfDn, NUM_CORES );
-        fprintf('Done generating the spin-up secondHamiltonian at time %s.\n', datestr(now,'yymmdd_HHMMSS'))
-    
-        size_of_secondHamiltonian_up = size(secondHamiltonianUp, 1);
+        fprintf('Begin spin-up calculations at time %s.\n', datestr(now,'yymmdd_HHMMSS'))  
         
         spinUpGreenFunction = zeros(1, noOfSites);
 
@@ -55,27 +50,13 @@ if (noOfUp < noOfSites) && (noOfDn < noOfSites)
         left_wave_function_up =(load_first_Hamiltonian_ground_state(aux_file_object))' * creationOperator( noOfSites, noOfUp, noOfDn , i_site, 'up' )' ;
         save(aux_file_name, '-append', 'left_wave_function_up', '-v7.3');
         clearvars left_wave_function_up;
-        if tau == 0
-            parfor j_site = 1:noOfSites
-                right_wave_function = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'up' ) * load_first_Hamiltonian_ground_state(aux_file_object);
-                result = (load_wave_function_up( aux_file_object )  * right_wave_function) ...
-                                                                * exp(tau*groundStateEnergy);
-                spinUpGreenFunction(j_site) = result;                
-            end            
-            save(output_files, '-append', 'spinUpGreenFunction', '-v7.3');
-        else            
-            exp_second_Hamiltonian_up = speye(size_of_secondHamiltonian_up) - tau*speye(size_of_secondHamiltonian_up)*secondHamiltonianUp;
-            save(aux_file_name, '-append', 'exp_second_Hamiltonian_up', '-v7.3');
-            clearvars exp_second_Hamiltonian_up;
-            parfor j_site = 1:noOfSites
-                right_wave_function = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'up' ) * ....
-                                            load_first_Hamiltonian_ground_state(aux_file_object);
-                result = (load_wave_function_up( aux_file_object ) * load_exp_second_Hamiltonian_up( aux_file_object ) * right_wave_function) * exp(tau*groundStateEnergy);
-                spinUpGreenFunction(j_site) = result;
-            end
-            save(output_files, '-append', 'spinUpGreenFunction', '-v7.3');
-        end
-        
+        parfor j_site = 1:noOfSites
+            right_wave_function = creationOperator( noOfSites, noOfUp, noOfDn , j_site, 'up' ) * load_first_Hamiltonian_ground_state(aux_file_object);
+            result = (load_wave_function_up( aux_file_object )  * right_wave_function) ...
+                                                            * exp(tau*groundStateEnergy);
+            spinUpGreenFunction(j_site) = result;                
+        end            
+        save(output_files, '-append', 'spinUpGreenFunction', '-v7.3');
     
     end
     
