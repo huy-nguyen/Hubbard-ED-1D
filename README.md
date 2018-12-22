@@ -2,7 +2,7 @@
 
 This repository contains the `MATLAB` code to perform exact calculations of the *imaginary-time correlation functions* of the *Hubbard* model in one dimension.
 
-The Hubbard model is widely believed to be the model that describes [high-temperature superconductivity](https://en.wikipedia.org/wiki/High-temperature_superconductivity). I presented the theory behind this model in a manner accessible to senior-year physics majors in Chapter 2 of my [undergraduate thesis](http://www.huy-nguyen.com/Reed-thesis).
+The Hubbard model is widely believed to be the model that describes [high-temperature superconductivity](https://en.wikipedia.org/wiki/High-temperature_superconductivity). I presented the theory behind this model in a manner accessible to senior-year physics majors in Chapter 2 of my [undergraduate thesis](http://www.huynguyen.io/Reed-thesis).
 
 The git history of this repo represents the work I did over a 14-day period in 2014. Between the very first commit (208e393) and the last commit (f29f165), the efficiency of the code improved by a factor of over a thousand due to my extensive profiling and optimization.
 
